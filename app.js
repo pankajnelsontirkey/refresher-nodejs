@@ -1,5 +1,6 @@
 const http = require('http');
 const fs = require('fs');
+const { error } = require('console');
 
 // function reqListener(req, res) {}
 // http.createServer(reqListener);
@@ -20,22 +21,23 @@ const server = http.createServer((req, res) => {
     res.write('</html>');
     return res.end();
   }
+
   if (url === '/message' && method === 'POST') {
     const body = [];
     req.on('data', (chunk) => {
       body.push(chunk);
     });
 
-    req.on('end', () => {
+    return req.on('end', () => {
       const parsedBody = Buffer.concat(body).toString();
       const message = parsedBody.split('=')[1];
-      console.log('message', message);
-    });
 
-    fs.writeFileSync('message.txt', 'DUMMY');
-    res.statusCode = 302;
-    res.setHeader('Location', '/');
-    return res.end();
+      fs.writeFile('message.txt', message, (error) => {
+        res.statusCode = 302;
+        res.setHeader('Location', '/');
+        return res.end();
+      });
+    });
   }
 
   res.setHeader('Content-Type', 'text/html');
