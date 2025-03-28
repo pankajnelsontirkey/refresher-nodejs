@@ -12,7 +12,7 @@ const app = express();
 // app.engine(
 //   'hbs',
 //   expressHbs({
-//     layoutsDir: 'views/layouts/',
+//     layoutsDir: 'views/hbs/layouts/',
 //     defaultLayout: 'main-layout',
 //     extname: 'hbs'
 //   })
