@@ -2,7 +2,7 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
-// const expressHbs = require('express-handlebars');
+// const { engine } = require('express-handlebars');
 
 const { router: adminRoutes } = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -11,7 +11,7 @@ const app = express();
 
 // app.engine(
 //   'hbs',
-//   expressHbs({
+//   engine({
 //     layoutsDir: 'views/hbs/layouts/',
 //     defaultLayout: 'main-layout',
 //     extname: 'hbs'
