@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const { get404 } = require('./controllers/errors');
-
 const { adminRoutes } = require('./routes/admin');
 const { shopRoutes } = require('./routes/shop');
 
