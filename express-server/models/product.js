@@ -24,7 +24,9 @@ class Product {
       products.push(this);
 
       fs.writeFile(p, JSON.stringify(products), (err) => {
-        console.log('err', err);
+        if (err) {
+          console.log('err', err);
+        }
       });
     });
   }
