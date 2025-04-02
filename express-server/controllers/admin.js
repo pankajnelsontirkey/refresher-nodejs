@@ -9,9 +9,9 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res) => {
   const {
-    body: { title }
+    body: { title, imageUrl, price, description }
   } = req;
-  const product = new Product(title);
+  const product = new Product(title, imageUrl, description, price);
   product.save();
   res.redirect('/');
 };
@@ -20,8 +20,12 @@ exports.getProducts = (req, res) => {
   Product.fetchAll((products) => {
     res.render('admin/view-products', {
       pageTitle: 'Admin Products',
-      path: '/products',
+      path: '/admin/products',
       products
     });
   });
+};
+
+exports.getEditProduct = (req, res) => {
+  res.send('edit product here');
 };
