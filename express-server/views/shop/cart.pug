@@ -1,0 +1,16 @@
+extends ../layouts/layout.pug
+
+block content
+  h2 Your shopping cart
+  if cart.products.length > 0
+    ul
+      each product in cart.products
+        li 
+          p #{product.title} (x#{product.quantity})
+          div: img(src=`${product.imageUrl}`)            
+          form(action="/cart-delete-item" method="POST")
+            input(type="hidden", name="productId" value=`${product.id}`)
+            button(type="submit" class="btn") Delete
+    p Total Price: #{cart.totalPrice}
+  else 
+    h1 No items in cart
