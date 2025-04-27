@@ -20,8 +20,15 @@ exports.postAddProduct = (req, res) => {
     description,
     parseFloat(price)
   );
-  newProduct.save();
-  res.redirect('/admin/products');
+  newProduct
+    .save()
+    .then(() => {
+      res.redirect('/products');
+    })
+    .catch((err) => {
+      console.log('error while adding product', err);
+      res.redirect('/admin/add-product');
+    });
 };
 
 exports.getEditProduct = (req, res) => {
@@ -30,16 +37,24 @@ exports.getEditProduct = (req, res) => {
     query: { edit }
   } = req;
 
-  Product.findById(id, (product) => {
-    if (product) {
-      return res.render('admin/edit-product', {
+  Product.findById(id)
+    .then(([row]) => {
+      res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
         editing: edit === 'true',
-        product
+        product: row
       });
-    }
-  });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.render('admin/edit-product', {
+        pageTitle: 'Edit Product',
+        path: '/admin/edit-product',
+        editing: edit === 'true',
+        product: null
+      });
+    });
 };
 
 exports.postEditProduct = (req, res) => {
@@ -60,13 +75,22 @@ exports.postEditProduct = (req, res) => {
 };
 
 exports.getProducts = (req, res) => {
-  Product.fetchAll((products) => {
-    res.render('admin/view-products', {
-      pageTitle: 'Admin Products',
-      path: '/admin/products',
-      products
+  Product.fetchAll()
+    .then(([rows]) => {
+      res.render('admin/view-products', {
+        pageTitle: 'Admin Products',
+        path: '/admin/products',
+        products: rows
+      });
+    })
+    .catch((err) => {
+      console.log('error while fetching products from database');
+      res.render('admin/view-products', {
+        pageTitle: 'Admin Products',
+        path: '/admin/products',
+        products: []
+      });
     });
-  });
 };
 
 exports.deleteProduct = (req, res) => {

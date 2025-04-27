@@ -63,11 +63,20 @@ exports.getProductById = (req, res) => {
     params: { id }
   } = req;
 
-  Product.findById(id, (product) => {
-    return res.render('shop/product-details', {
-      pageTitle: 'Product Details',
-      path: `/products/${id}`,
-      product
+  Product.findById(id)
+    .then(([[product]]) => {
+      res.render('shop/product-details', {
+        pageTitle: product.title,
+        product: product,
+        path: `/products/${id}`
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.render('shop/product-details', {
+        pageTitle: 'Product Details',
+        path: `/products/${id}`,
+        product: null
+      });
     });
-  });
 };
