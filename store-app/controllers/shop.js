@@ -1,5 +1,5 @@
 const { Cart } = require('../models/cart');
-const { Product } = require('../models/product');
+const Product = require('../models/product');
 
 exports.getCart = (req, res) => {
   const cartData = { products: [], totalPrice: 0 };
@@ -63,8 +63,8 @@ exports.getProductById = (req, res) => {
     params: { id }
   } = req;
 
-  Product.findById(id)
-    .then(([[product]]) => {
+  Product.findByPk(id)
+    .then((product) => {
       res.render('shop/product-details', {
         pageTitle: product.title,
         product: product,
@@ -77,6 +77,25 @@ exports.getProductById = (req, res) => {
         pageTitle: 'Product Details',
         path: `/products/${id}`,
         product: null
+      });
+    });
+};
+
+exports.getShopProducts = (req, res) => {
+  Product.findAll()
+    .then((products) => {
+      res.render('shop/product-list', {
+        pageTitle: 'Products',
+        path: '/products',
+        products
+      });
+    })
+    .catch((err) => {
+      console.log('Error while fetching from database', err);
+      res.render('shop/product-list', {
+        pageTitle: 'Products',
+        path: '/products',
+        products: []
       });
     });
 };

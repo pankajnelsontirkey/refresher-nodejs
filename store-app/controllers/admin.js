@@ -1,4 +1,4 @@
-const { Product } = require('../models/product');
+const Product = require('../models/product');
 
 exports.getAddProduct = (req, res) => {
   res.render('admin/edit-product', {
@@ -13,21 +13,13 @@ exports.postAddProduct = (req, res) => {
     body: { title, imageUrl, price, description }
   } = req;
 
-  const newProduct = new Product(
-    null,
-    title,
-    imageUrl,
-    description,
-    parseFloat(price)
-  );
-  newProduct
-    .save()
-    .then(() => {
-      res.redirect('/products');
+  Product.create({ title, imageUrl, price, description })
+    .then(({ dataValues }) => {
+      console.log('Product created with id: ', dataValues.id);
+      res.redirect('/admin/products');
     })
     .catch((err) => {
-      console.log('error while adding product', err);
-      res.redirect('/admin/add-product');
+      console.log('err', err);
     });
 };
 
@@ -37,13 +29,13 @@ exports.getEditProduct = (req, res) => {
     query: { edit }
   } = req;
 
-  Product.findById(id)
-    .then(([row]) => {
+  Product.findByPk(id)
+    .then((product) => {
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
         editing: edit === 'true',
-        product: row
+        product
       });
     })
     .catch((err) => {
@@ -62,29 +54,32 @@ exports.postEditProduct = (req, res) => {
     body: { productId, title, imageUrl, description, price }
   } = req;
 
-  const updatedProduct = new Product(
-    productId,
-    title,
-    imageUrl,
-    description,
-    price
-  );
-
-  updatedProduct.save();
-  res.redirect('/admin/products');
+  Product.findByPk(productId)
+    .then((product) => {
+      product.set({ title, imageUrl, description, price });
+      return product.save();
+    })
+    .then((result) => {
+      console.log('Product was updated');
+      res.redirect('/admin/products');
+    })
+    .catch((err) => {
+      console.log('error while updating', err);
+    });
 };
 
-exports.getProducts = (req, res) => {
-  Product.fetchAll()
-    .then(([rows]) => {
+exports.getAdminProducts = (req, res) => {
+  // Product.fetchAll()
+  Product.findAll()
+    .then((products) => {
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',
         path: '/admin/products',
-        products: rows
+        products
       });
     })
     .catch((err) => {
-      console.log('error while fetching products from database');
+      console.log('error while fetching products from database', err);
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',
         path: '/admin/products',
@@ -97,6 +92,16 @@ exports.deleteProduct = (req, res) => {
   const {
     body: { productId: id }
   } = req;
-  Product.deleteById(id);
-  res.redirect('/admin/products');
+  // Product.destroy(id);
+  Product.findByPk(id)
+    .then((product) => {
+      return product.destroy();
+    })
+    .then(() => {
+      console.log('Product was deleted!');
+      res.redirect('/admin/products');
+    })
+    .catch((err) => {
+      console.log('Error while deletin product', err);
+    });
 };
