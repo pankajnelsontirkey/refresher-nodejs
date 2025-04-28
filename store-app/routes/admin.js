@@ -1,12 +1,12 @@
 const express = require('express');
 
 const {
+  deleteProduct,
   getAddProduct,
-  postAddProduct,
-  getProducts,
+  getAdminProducts,
   getEditProduct,
-  postEditProduct,
-  deleteProduct
+  postAddProduct,
+  postEditProduct
 } = require('../controllers/admin');
 
 const router = express.Router();
@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/add-product', getAddProduct);
 router.post('/add-product', postAddProduct);
 
-router.get('/products', getProducts);
+router.get('/products', getAdminProducts);
 
 router.get('/edit-product/:id', getEditProduct);
 router.post('/edit-product', postEditProduct);

@@ -1,13 +1,14 @@
 const express = require('express');
 
-const { getProducts } = require('../controllers/products');
 const {
   getCart,
   getCheckout,
   getOrders,
   getProductById,
-  postCart,
-  postDeleteItemFromCart
+  postDeleteItemFromCart,
+  getShopProducts,
+  postAddToCart,
+  postCreateOrder
 } = require('../controllers/shop');
 
 const router = express.Router();
@@ -16,15 +17,15 @@ router.get('/', (req, res) => {
   res.render('shop/index', { pageTitle: 'Home', path: '/' });
 });
 
-router.get('/products', getProducts);
+router.get('/products', getShopProducts);
 
 router.get('/cart', getCart);
 
-router.post('/cart', postCart);
+router.post('/cart', postAddToCart);
 
 router.post('/cart-delete-item', postDeleteItemFromCart);
 
-router.get('/checkout', getCheckout);
+router.post('/create-order', postCreateOrder);
 
 router.get('/orders', getOrders);
 
