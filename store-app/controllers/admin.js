@@ -10,10 +10,13 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res) => {
   const {
-    body: { title, imageUrl, price, description }
+    body: { title, imageUrl, price, description },
+    user
   } = req;
+  console.log(user);
 
-  Product.create({ title, imageUrl, price, description })
+  user
+    .createProduct({ title, imageUrl, price, description })
     .then(({ dataValues }) => {
       console.log('Product created with id: ', dataValues.id);
       res.redirect('/admin/products');
@@ -26,11 +29,14 @@ exports.postAddProduct = (req, res) => {
 exports.getEditProduct = (req, res) => {
   const {
     params: { id },
-    query: { edit }
+    query: { edit },
+    user
   } = req;
 
-  Product.findByPk(id)
-    .then((product) => {
+  user
+    .getProducts({ where: { id } })
+    // Product.findByPk(id)
+    .then(([product]) => {
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
@@ -69,8 +75,12 @@ exports.postEditProduct = (req, res) => {
 };
 
 exports.getAdminProducts = (req, res) => {
-  // Product.fetchAll()
-  Product.findAll()
+  const { user } = req;
+
+  user
+    // Product.fetchAll()
+    // Product.findAll()
+    .getProducts()
     .then((products) => {
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',
