@@ -10,23 +10,20 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res) => {
   const {
-    body: { title, imageUrl, price, description },
-    user
+    body: { title, imageUrl, description, price }
   } = req;
-  console.log(user);
 
-  user
-    .createProduct({ title, imageUrl, price, description })
-    .then(({ dataValues }) => {
-      console.log('Product created with id: ', dataValues.id);
+  const product = new Product(title, imageUrl, description, price);
+  product
+    .save()
+    .then(({ insertedId }) => {
+      console.log(insertedId);
       res.redirect('/admin/products');
     })
-    .catch((err) => {
-      console.log('err', err);
-    });
+    .catch((err) => console.log(err));
 };
 
-exports.getEditProduct = (req, res) => {
+/* exports.getEditProduct = (req, res) => {
   const {
     params: { id },
     query: { edit },
@@ -53,7 +50,7 @@ exports.getEditProduct = (req, res) => {
         product: null
       });
     });
-};
+}; */
 
 exports.postEditProduct = (req, res) => {
   const {
@@ -75,12 +72,7 @@ exports.postEditProduct = (req, res) => {
 };
 
 exports.getAdminProducts = (req, res) => {
-  const { user } = req;
-
-  user
-    // Product.fetchAll()
-    // Product.findAll()
-    .getProducts()
+  Product.fetchAll()
     .then((products) => {
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',
