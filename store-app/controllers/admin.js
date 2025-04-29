@@ -16,24 +16,26 @@ exports.postAddProduct = (req, res) => {
   const product = new Product(title, imageUrl, description, price);
   product
     .save()
-    .then(({ insertedId }) => {
-      console.log(insertedId);
+    .then(({ acknowledged, insertedId }) => {
+      console.log(
+        `Created: ${acknowledged} Create new document with id: ${insertedId}`
+      );
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));
 };
 
-/* exports.getEditProduct = (req, res) => {
+exports.getEditProduct = (req, res) => {
   const {
     params: { id },
-    query: { edit },
-    user
+    query: { edit }
   } = req;
 
-  user
-    .getProducts({ where: { id } })
-    // Product.findByPk(id)
-    .then(([product]) => {
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        throw 'Product not found';
+      }
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
@@ -41,34 +43,25 @@ exports.postAddProduct = (req, res) => {
         product
       });
     })
-    .catch((err) => {
-      console.log(err);
-      res.render('admin/edit-product', {
-        pageTitle: 'Edit Product',
-        path: '/admin/edit-product',
-        editing: edit === 'true',
-        product: null
-      });
-    });
-}; */
+    .catch((err) => console.log(err));
+};
 
 exports.postEditProduct = (req, res) => {
   const {
-    body: { productId, title, imageUrl, description, price }
+    body: { title, imageUrl, description, price, productId }
   } = req;
 
-  Product.findByPk(productId)
-    .then((product) => {
-      product.set({ title, imageUrl, description, price });
-      return product.save();
-    })
-    .then((result) => {
-      console.log('Product was updated');
+  const product = new Product(title, imageUrl, description, price, productId);
+
+  product
+    .save()
+    .then(({ acknowledged, modifiedCount }) => {
+      console.log(
+        `Updated: ${acknowledged}, modified ${modifiedCount} document.`
+      );
       res.redirect('/admin/products');
     })
-    .catch((err) => {
-      console.log('error while updating', err);
-    });
+    .catch((err) => console.log(err));
 };
 
 exports.getAdminProducts = (req, res) => {
@@ -92,18 +85,15 @@ exports.getAdminProducts = (req, res) => {
 
 exports.deleteProduct = (req, res) => {
   const {
-    body: { productId: id }
+    body: { productId }
   } = req;
-  // Product.destroy(id);
-  Product.findByPk(id)
-    .then((product) => {
-      return product.destroy();
-    })
-    .then(() => {
-      console.log('Product was deleted!');
+
+  Product.deleteById(productId)
+    .then(({ acknowledged, deletedCount }) => {
+      console.log(
+        `Deleted: ${acknowledged}, Deleted ${deletedCount} document.`
+      );
       res.redirect('/admin/products');
     })
-    .catch((err) => {
-      console.log('Error while deletin product', err);
-    });
+    .catch((err) => console.log(err));
 };

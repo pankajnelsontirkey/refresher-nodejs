@@ -1,4 +1,4 @@
-const Product = require('../models/sequelize-models/product');
+const Product = require('../models/product');
 
 exports.getCart = (req, res) => {
   const { user } = req;
@@ -131,7 +131,7 @@ exports.getProductById = (req, res) => {
     params: { id }
   } = req;
 
-  Product.findByPk(id)
+  Product.findById(id)
     .then((product) => {
       res.render('shop/product-details', {
         pageTitle: product.title,
@@ -150,7 +150,7 @@ exports.getProductById = (req, res) => {
 };
 
 exports.getShopProducts = (req, res) => {
-  Product.findAll()
+  Product.fetchAll()
     .then((products) => {
       res.render('shop/product-list', {
         pageTitle: 'Products',

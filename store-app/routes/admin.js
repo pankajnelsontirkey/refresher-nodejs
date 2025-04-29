@@ -16,9 +16,9 @@ router.get('/products', getAdminProducts);
 router.get('/add-product', getAddProduct);
 router.post('/add-product', postAddProduct);
 
-// router.get('/edit-product/:id', getEditProduct);
-// router.post('/edit-product', postEditProduct);
+router.get('/edit-product/:id', getEditProduct);
+router.post('/edit-product', postEditProduct);
 
-// router.post('/delete-product', deleteProduct);
+router.post('/delete-product', deleteProduct);
 
 module.exports = { adminRoutes: router };
