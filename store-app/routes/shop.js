@@ -19,11 +19,11 @@ router.get('/', (req, res) => {
 
 router.get('/products', getShopProducts);
 
-// router.get('/cart', getCart);
+router.get('/cart', getCart);
 
-// router.post('/cart', postAddToCart);
+router.post('/cart', postAddToCart);
 
-// router.post('/cart-delete-item', postDeleteItemFromCart);
+router.post('/cart-delete-item', postDeleteItemFromCart);
 
 // router.post('/create-order', postCreateOrder);
 

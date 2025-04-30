@@ -2,19 +2,19 @@ extends ../layouts/layout.pug
 
 block styles
   link(rel="stylesheet", href="/css/cart.css")
-
+  link(rel="stylesheet", href="/css/product.css")
 
 block content
   h2 Your shopping cart
-  if cart.length > 0
+  if cart.products.length > 0
     ul(class="cart__item-list")
-      each product in cart
+      each product in cart.products
         li(class="cart__item")
           h1 #{product.title} 
-          h2 #{product.cartItem.quantity}
-          div: img(src=`${product.imageUrl}`)            
+          h2 Quantity: #{product.quantity}
+          //- div: img(src=`${product.imageUrl}`)            
           form(action="/cart-delete-item" method="POST")
-            input(type="hidden", name="productId" value=`${product.id}`)
+            input(type="hidden", name="productId" value=`${product._id}`)
             button(type="submit" class="btn danger") Delete
     hr
     .centered 
@@ -23,4 +23,4 @@ block content
     p Total Price: #{cart.totalPrice}
   else 
     h1 No items in cart
-  link(rel="stylesheet", href="/css/product.css")
+  

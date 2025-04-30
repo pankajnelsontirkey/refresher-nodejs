@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res) => {
+  console.log('getAddProduct', req.user);
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
@@ -10,10 +11,19 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res) => {
   const {
-    body: { title, imageUrl, description, price }
+    body: { title, imageUrl, description, price },
+    user: { _id: userId }
   } = req;
 
-  const product = new Product(title, imageUrl, description, price);
+  const product = new Product(
+    title,
+    imageUrl,
+    description,
+    price,
+    null,
+    userId
+  );
+
   product
     .save()
     .then(({ acknowledged, insertedId }) => {
@@ -23,6 +33,25 @@ exports.postAddProduct = (req, res) => {
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));
+};
+
+exports.getAdminProducts = (req, res) => {
+  Product.fetchAll()
+    .then((products) => {
+      res.render('admin/view-products', {
+        pageTitle: 'Admin Products',
+        path: '/admin/products',
+        products
+      });
+    })
+    .catch((err) => {
+      console.log('error while fetching products from database', err);
+      res.render('admin/view-products', {
+        pageTitle: 'Admin Products',
+        path: '/admin/products',
+        products: []
+      });
+    });
 };
 
 exports.getEditProduct = (req, res) => {
@@ -62,25 +91,6 @@ exports.postEditProduct = (req, res) => {
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));
-};
-
-exports.getAdminProducts = (req, res) => {
-  Product.fetchAll()
-    .then((products) => {
-      res.render('admin/view-products', {
-        pageTitle: 'Admin Products',
-        path: '/admin/products',
-        products
-      });
-    })
-    .catch((err) => {
-      console.log('error while fetching products from database', err);
-      res.render('admin/view-products', {
-        pageTitle: 'Admin Products',
-        path: '/admin/products',
-        products: []
-      });
-    });
 };
 
 exports.deleteProduct = (req, res) => {
