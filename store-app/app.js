@@ -13,7 +13,8 @@ let _db;
 
 const app = express();
 
-const { PORT, DUMMY_USER_OBJECTID } = process.env;
+const { PORT, DUMMY_USER_USERNAME, DUMMY_USER_EMAIL, DUMMY_USER_OBJECTID } =
+  process.env;
 
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -22,16 +23,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  // if (req.user) {
-  //   return next();
-  // }
-  // User.findById(ObjectId.createFromHexString(DUMMY_USER_OBJECTID))
-  //   .then((userData) => {
-  //     const { username, email, cart, _id } = userData;
-  //     req['user'] = new User(username, email, cart, _id);
-  next();
-  //   })
-  //   .catch((err) => console.log(err));
+  if (req.user) {
+    return next();
+  }
+  User.findById(ObjectId.createFromHexString(DUMMY_USER_OBJECTID))
+    .then((user) => {
+      req['user'] = user;
+      next();
+    })
+    .catch((err) => console.log(err));
 });
 
 app.use('/admin', adminRoutes);
@@ -42,6 +42,16 @@ app.use(get404);
 mongoose
   .connect(MONGODB_URL, { dbName: MONGODB_DB_NAME })
   .then((result) => {
+    User.findOne().then((user) => {
+      if (!user) {
+        const user = new User({
+          username: DUMMY_USER_USERNAME,
+          email: DUMMY_USER_EMAIL
+        });
+        user.save();
+      }
+    });
+
     app.listen(PORT, () => {
       console.log('Server listening on port ', PORT);
     });
