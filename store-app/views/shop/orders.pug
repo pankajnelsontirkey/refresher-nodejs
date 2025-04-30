@@ -1,14 +1,19 @@
 extends ../layouts/layout.pug
 
+
+block styles 
+  link(rel="stylesheet", href="/css/orders.css")
+
 block content
   if orders.length > 0
-    ul 
+    ul.orders 
       each order in orders
-        li
-          h1 # #{order.id}
-          ul 
-            each product in order.products
-              li
-                h2 #{product.title} -  $#{product.price} #{product.orderItem.quantity}
+        li.orders__item
+          h1 # #{order._id}
+          ul.orders__products
+            each product in order.products              
+              li.orders__products-item 
+                p #{product.title} (#{product.quantity}) Price $#{product.price}  
+          p Total Price: 
   else
-    h2 Your orders
+    h1 No Orders

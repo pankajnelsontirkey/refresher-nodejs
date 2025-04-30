@@ -11,10 +11,10 @@ const {
 
 const router = express.Router();
 
+router.get('/products', getAdminProducts);
+
 router.get('/add-product', getAddProduct);
 router.post('/add-product', postAddProduct);
-
-router.get('/products', getAdminProducts);
 
 router.get('/edit-product/:id', getEditProduct);
 router.post('/edit-product', postEditProduct);
