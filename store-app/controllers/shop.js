@@ -104,34 +104,13 @@ exports.postDeleteItemFromCart = (req, res) => {
 
 exports.postCreateOrder = (req, res) => {
   const { user } = req;
-  let fetchedCart;
 
   user
-    .getCart()
-    .then((cart) => {
-      fetchedCart = cart;
-      return cart.getProducts();
+    .addOrder()
+    .then((result) => {
+      res.redirect('/orders');
     })
-    .then((products) => {
-      return user
-        .createOrder()
-        .then((order) => {
-          return order.addProducts(
-            products.map((product) => {
-              product.orderItem = { quantity: product.cartItem.quantity };
-              return product;
-            })
-          );
-        })
-        .then((result) => {
-          return fetchedCart.setProducts(null);
-          res.redirect('/orders');
-        })
-        .then((result) => {
-          res.redirect('/orders');
-        })
-        .catch((err) => console.log(err));
-    })
+
     .catch((err) => console.log(err));
 };
 
@@ -139,14 +118,21 @@ exports.getOrders = (req, res) => {
   const { user } = req;
 
   user
-    .getOrders({ include: ['products'] })
+    .getOrders()
     .then((orders) => {
       console.log(orders);
+
       res.render('shop/orders', {
         pageTitle: 'Your Orders',
         path: '/orders',
         orders
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => console.log('getOrders', err));
+};
+
+const t = {
+  $replaceRoot: {
+    newRoot: { $mergeObjects: [{ $arrayElemAt: ['$fromItems', 0] }, '$$ROOT'] }
+  }
 };

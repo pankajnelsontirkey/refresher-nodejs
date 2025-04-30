@@ -1,4 +1,5 @@
-const { PRODUCTS, USERS } = require('../util/constants').COLLECTIONS;
+const { PRODUCTS, USERS, ORDERS } = require('../util/constants').COLLECTIONS;
+const { OrdersWithProductDetails } = require('../util/aggregations');
 const { getDb } = require('../util/database_mongodb');
 
 class User {
@@ -58,6 +59,28 @@ class User {
         { _id: this._id },
         { $set: { cart: { ...this.cart, products: updateProducts } } }
       );
+  }
+
+  addOrder() {
+    const db = getDb();
+    const order = { ...this.cart, userId: this._id };
+    return db
+      .collection(ORDERS)
+      .insertOne(order)
+      .then(({ acknowledge, insertedId }) => {
+        console.log(acknowledge, insertedId);
+        this.cart = { products: [] };
+        return db
+          .collection(USERS)
+          .updateOne({ _id: this._id }, { $set: { cart: { products: [] } } });
+      })
+      .catch((err) => console.log(err));
+  }
+
+  getOrders() {
+    const db = getDb();
+
+    return db.collection(ORDERS).aggregate(OrdersWithProductDetails).toArray();
   }
 
   static findById(userId) {
