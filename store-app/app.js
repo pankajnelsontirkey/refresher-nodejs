@@ -3,10 +3,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const User = require('./models/user');
+
+const { get404 } = require('./controllers/errors');
+
 const { shopRoutes } = require('./routes/shop');
 const { adminRoutes } = require('./routes/admin');
-const { get404 } = require('./controllers/errors');
-const User = require('./models/user');
+const { authRoutes } = require('./routes/auth');
 
 const { MONGODB_URL, MONGODB_DB_NAME } = process.env;
 let _db;
@@ -36,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(get404);
 
