@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
 
 const User = require('./models/user');
 
@@ -11,19 +12,31 @@ const { shopRoutes } = require('./routes/shop');
 const { adminRoutes } = require('./routes/admin');
 const { authRoutes } = require('./routes/auth');
 
-const { MONGODB_URL, MONGODB_DB_NAME } = process.env;
-let _db;
+const {
+  MONGODB_URL,
+  MONGODB_DB_NAME,
+  DUMMY_USER_USERNAME,
+  DUMMY_USER_EMAIL,
+  DUMMY_USER_OBJECTID,
+  PORT,
+  SESSION_SECRET
+} = process.env;
 
 const app = express();
-
-const { PORT, DUMMY_USER_USERNAME, DUMMY_USER_EMAIL, DUMMY_USER_OBJECTID } =
-  process.env;
 
 app.set('view engine', 'pug');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 3600 }
+  })
+);
 
 app.use((req, res, next) => {
   if (req.user) {
