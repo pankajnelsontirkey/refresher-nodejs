@@ -2,7 +2,6 @@ const express = require('express');
 
 const {
   getCart,
-  getCheckout,
   getOrders,
   getProductById,
   postDeleteItemFromCart,
@@ -14,7 +13,7 @@ const {
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.render('shop/index', { pageTitle: 'Home', path: '/' });
+  res.redirect('/products');
 });
 
 router.get('/products', getShopProducts);
