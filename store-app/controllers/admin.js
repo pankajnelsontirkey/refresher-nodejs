@@ -1,7 +1,6 @@
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res) => {
-  console.log('getAddProduct', req.user);
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
@@ -15,28 +14,20 @@ exports.postAddProduct = (req, res) => {
     user: { _id: userId }
   } = req;
 
-  const product = new Product(
-    title,
-    imageUrl,
-    description,
-    price,
-    null,
-    userId
-  );
+  const product = new Product({ title, imageUrl, description, price, userId });
 
   product
     .save()
-    .then(({ acknowledged, insertedId }) => {
-      console.log(
-        `Created: ${acknowledged} Create new document with id: ${insertedId}`
-      );
+    .then((result) => {
+      console.log(`${result._id}`);
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));
 };
 
 exports.getAdminProducts = (req, res) => {
-  Product.fetchAll()
+  Product.find()
+    // .populate('userId', 'username')
     .then((products) => {
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',
@@ -80,14 +71,9 @@ exports.postEditProduct = (req, res) => {
     body: { title, imageUrl, description, price, productId }
   } = req;
 
-  const product = new Product(title, imageUrl, description, price, productId);
-
-  product
-    .save()
-    .then(({ acknowledged, modifiedCount }) => {
-      console.log(
-        `Updated: ${acknowledged}, modified ${modifiedCount} document.`
-      );
+  Product.findByIdAndUpdate(productId, { title, imageUrl, description, price })
+    .then((result) => {
+      // console.log(`${result}`);
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));
@@ -98,11 +84,8 @@ exports.deleteProduct = (req, res) => {
     body: { productId }
   } = req;
 
-  Product.deleteById(productId)
-    .then(({ acknowledged, deletedCount }) => {
-      console.log(
-        `Deleted: ${acknowledged}, Deleted ${deletedCount} document.`
-      );
+  Product.findByIdAndDelete(productId)
+    .then((result) => {
       res.redirect('/admin/products');
     })
     .catch((err) => console.log(err));

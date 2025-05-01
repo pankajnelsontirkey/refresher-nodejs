@@ -5,16 +5,16 @@ block styles
   link(rel="stylesheet", href="/css/product.css")
 
 block content
-  h2 Your shopping cart
+  h1 Your shopping cart
   if cart.products.length > 0
     ul(class="cart__item-list")
       each product in cart.products
         li(class="cart__item")
-          h1 #{product.title} 
-          h2 Quantity: #{product.quantity}
-          //- div: img(src=`${product.imageUrl}`)            
+          h2 #{product.productId.title} 
+          h2 Quantity: #{product.quantity}                   
+          h2 Price: $#{product.productId.price}
           form(action="/cart-delete-item" method="POST")
-            input(type="hidden", name="productId" value=`${product._id}`)
+            input(type="hidden", name="productId" value=`${product.productId._id}`)
             button(type="submit" class="btn danger") Delete
     hr
     .centered 

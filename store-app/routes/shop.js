@@ -19,14 +19,11 @@ router.get('/', (req, res) => {
 
 router.get('/products', getShopProducts);
 
-router.get('/cart', getCart);
-
 router.post('/cart', postAddToCart);
-
+router.get('/cart', getCart);
 router.post('/cart-delete-item', postDeleteItemFromCart);
 
 router.post('/create-order', postCreateOrder);
-
 router.get('/orders', getOrders);
 
 router.get('/products/:id', getProductById);
