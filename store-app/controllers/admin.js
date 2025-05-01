@@ -10,10 +10,11 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res) => {
   const {
-    body: { title, imageUrl, description, price }
+    body: { title, imageUrl, description, price },
+    user: { _id: userId }
   } = req;
 
-  const product = new Product({ title, imageUrl, description, price });
+  const product = new Product({ title, imageUrl, description, price, userId });
 
   product
     .save()
@@ -26,6 +27,7 @@ exports.postAddProduct = (req, res) => {
 
 exports.getAdminProducts = (req, res) => {
   Product.find()
+    // .populate('userId', 'username')
     .then((products) => {
       res.render('admin/view-products', {
         pageTitle: 'Admin Products',

@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Order = require('../models/order');
 
 exports.getShopProducts = (req, res) => {
   Product.find()
@@ -45,26 +46,13 @@ exports.getProductById = (req, res) => {
 exports.getCart = (req, res) => {
   const { user } = req;
 
-  const quantities = {};
-  user.cart.products.forEach((product) => {
-    quantities[product.productId.toString()] = product.quantity;
-  });
-
   user
-    .getCart()
-    .then((products) => {
-      return products.map((product) => {
-        return {
-          ...product,
-          quantity: quantities[product._id.toString()]
-        };
-      });
-    })
-    .then((productsWithQuantity) => {
+    .populate('cart.products.productId')
+    .then((user) => {
       res.render('shop/cart', {
         pageTitle: 'Your Cart',
         path: '/cart',
-        cart: { ...user.cart, products: productsWithQuantity }
+        cart: { ...user.cart }
       });
     })
     .catch((err) => console.log(err));
@@ -80,8 +68,7 @@ exports.postAddToCart = (req, res) => {
     .then((product) => {
       return user.addToCart(product);
     })
-    .then(({ acknowledge, modifiedCount }) => {
-      console.log(`Updated - ${acknowledge}; count:  ${modifiedCount}`);
+    .then((result) => {
       res.redirect('/cart');
     })
     .catch((err) => console.log(err));
@@ -94,9 +81,8 @@ exports.postDeleteItemFromCart = (req, res) => {
   } = req;
 
   user
-    .deleteFromCart(productId)
-    .then(({ result }) => {
-      console.log(`${result}`);
+    .removeFromCart(productId)
+    .then((result) => {
       res.redirect('/cart');
     })
     .catch((err) => console.log(err));
@@ -106,22 +92,42 @@ exports.postCreateOrder = (req, res) => {
   const { user } = req;
 
   user
-    .addOrder()
+    .populate('cart.products.productId')
+    .then((userData) => {
+      const products = userData.cart.products.map(
+        ({ productId, quantity }) => ({ quantity, productId })
+      );
+
+      const totalPrice = userData.cart.products.reduce(
+        (total, { productId, quantity }) => {
+          return total + productId.price * quantity;
+        },
+        0
+      );
+
+      const order = new Order({
+        user: { username: userData.username, userId: userData._id },
+        products,
+        totalPrice
+      });
+
+      return order.save();
+    })
+    .then((result) => {
+      return user.clearCart();
+    })
     .then((result) => {
       res.redirect('/orders');
     })
-
     .catch((err) => console.log(err));
 };
 
 exports.getOrders = (req, res) => {
   const { user } = req;
 
-  user
-    .getOrders()
+  Order.find({ 'user.userId': user._id })
+    .populate('products.productId')
     .then((orders) => {
-      console.log(orders);
-
       res.render('shop/orders', {
         pageTitle: 'Your Orders',
         path: '/orders',
@@ -129,10 +135,4 @@ exports.getOrders = (req, res) => {
       });
     })
     .catch((err) => console.log('getOrders', err));
-};
-
-const t = {
-  $replaceRoot: {
-    newRoot: { $mergeObjects: [{ $arrayElemAt: ['$fromItems', 0] }, '$$ROOT'] }
-  }
 };
