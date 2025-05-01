@@ -26,7 +26,7 @@ app.use((req, res, next) => {
   if (req.user) {
     return next();
   }
-  User.findById(ObjectId.createFromHexString(DUMMY_USER_OBJECTID))
+  User.findById(DUMMY_USER_OBJECTID)
     .then((user) => {
       req['user'] = user;
       next();

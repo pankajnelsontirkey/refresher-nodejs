@@ -13,7 +13,7 @@ block content
           ul.orders__products
             each product in order.products              
               li.orders__products-item 
-                p #{product.title} (#{product.quantity}) Price $#{product.price}  
-          p Total Price: 
+                h2 #{product.productId.title} (#{product.quantity}) - $#{product.productId.price}  
+        p Total Price: $#{order.totalPrice}
   else
     h1 No Orders
