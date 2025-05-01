@@ -3,26 +3,27 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const User = require('./models/user');
-
-const { get404 } = require('./controllers/errors');
 
 const { shopRoutes } = require('./routes/shop');
 const { adminRoutes } = require('./routes/admin');
 const { authRoutes } = require('./routes/auth');
 
+const { get404 } = require('./controllers/errors');
+
 const {
-  MONGODB_URL,
+  MONGODB_URI,
   MONGODB_DB_NAME,
   DUMMY_USER_USERNAME,
   DUMMY_USER_EMAIL,
-  DUMMY_USER_OBJECTID,
   PORT,
   SESSION_SECRET
 } = process.env;
 
 const app = express();
+const store = new MongoDBStore({ uri: MONGODB_URI, collection: 'sessions' });
 
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -34,20 +35,23 @@ app.use(
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 3600 }
+    // cookie: { maxAge: 60 * 60 * 2 },
+    store
   })
 );
 
 app.use((req, res, next) => {
-  if (req.user) {
+  if (!req.session?.user) {
     return next();
   }
-  User.findById(DUMMY_USER_OBJECTID)
+  User.findById(req.session.user._id)
     .then((user) => {
-      req['user'] = user;
+      req.user = user;
       next();
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 app.use('/admin', adminRoutes);
@@ -57,7 +61,7 @@ app.use(authRoutes);
 app.use(get404);
 
 mongoose
-  .connect(MONGODB_URL, { dbName: MONGODB_DB_NAME })
+  .connect(MONGODB_URI, { dbName: MONGODB_DB_NAME })
   .then((result) => {
     User.findOne().then((user) => {
       if (!user) {

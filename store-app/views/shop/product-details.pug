@@ -15,6 +15,7 @@ block content
           h2.product__price $#{product.price}
           p.product_description #{product.description}
           .card__actions
-            include ../layouts/includes/add-to-cart.pug
+            if isAuthenticated 
+              include ../layouts/includes/add-to-cart.pug
   else 
     h2 Product not found
