@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const User = require('../models/user');
 
 const { DUMMY_USER_OBJECTID } = process.env;
@@ -27,7 +29,34 @@ exports.getSignup = (req, res) => {
   });
 };
 
-exports.postSignup = (req, res) => {};
+exports.postSignup = (req, res) => {
+  const { email, password, confirmPassword } = req.body;
+
+  User.findOne({ email })
+    .then((userDoc) => {
+      if (userDoc) {
+        return res.redirect('/signup');
+      } else {
+        bcrypt
+          .hash(password, 12)
+          .then((hashedPassword) => {
+            if (hashedPassword) {
+              const user = new User({
+                email,
+                password: hashedPassword,
+                cart: { items: [] }
+              });
+              return user.save();
+            }
+          })
+          .then((result) => {
+            res.redirect('/login');
+          })
+          .catch((err) => console.error(err));
+      }
+    })
+    .catch((err) => console.error(err));
+};
 
 exports.postLogout = (req, res) => {
   req.session.destroy((err) => {
