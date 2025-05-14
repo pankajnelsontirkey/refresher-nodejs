@@ -1,6 +1,7 @@
 const path = require('path');
-const express = require('express');
+
 const bodyParser = require('body-parser');
+const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
@@ -63,15 +64,15 @@ app.use(get404);
 mongoose
   .connect(MONGODB_URI, { dbName: MONGODB_DB_NAME })
   .then((result) => {
-    User.findOne().then((user) => {
-      if (!user) {
-        const user = new User({
-          username: DUMMY_USER_USERNAME,
-          email: DUMMY_USER_EMAIL
-        });
-        user.save();
-      }
-    });
+    // User.findOne().then((user) => {
+    //   if (!user) {
+    //     const user = new User({
+    //       username: DUMMY_USER_USERNAME,
+    //       email: DUMMY_USER_EMAIL
+    //     });
+    //     user.save();
+    //   }
+    // });
 
     app.listen(PORT, () => {
       console.log('Server listening on port ', PORT);

@@ -19,6 +19,8 @@ block navigation
         if !isAuthenticated
           li.main-header__item
             a(href="/login", class=(path === '/login' ? 'active' : '')) Login
+          li.main-header__item
+            a(href="/signup", class=(path === '/signup' ? 'active' : '')) Signup
         else 
           li.main-header__item
             form(action="/logout" method="POST")
@@ -42,3 +44,5 @@ block navigation
     ul.mobile-nav__item-list
         li.mobile-nav__item
           a(href="/login", class=(path === '/login' ? 'active' : '')) Login
+        li.mobile-nav__item
+            a(href="/signup", class=(path === '/signup' ? 'active' : '')) Signup
