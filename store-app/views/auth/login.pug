@@ -5,7 +5,8 @@ block styles
   link(rel="stylesheet", href="/css/auth.css")
 
 block content
-  
+    if errorMessage
+      .user-message.user-message--error #{errorMessage}
     form.login-form(action=`/login`, method="POST")
       .form-control 
         label(for="email") Email
@@ -13,5 +14,6 @@ block content
       .form-control 
         label(for="password") Password
         input(type="password", name="password" id="password")
+      include ../layouts/includes/csrf.pug
 
       button.btn(type="submit") Login

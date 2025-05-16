@@ -1,3 +1,4 @@
 form(action="/cart", method="post") 
-  button.btn Add to Cart
+  include ./csrf.pug
   input(type="hidden", name="productId", value=`${product._id}`)
+  button.btn Add to Cart

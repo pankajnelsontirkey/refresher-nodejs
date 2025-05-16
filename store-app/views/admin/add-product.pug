@@ -6,6 +6,7 @@ block styles
 
 block content
   form.product-form(action="/admin/add-product", method="POST")
+    include ../layouts/includes/csrf.pug
     .form-control 
       label(for="title") Title
       input(type="text", name="title" id="title")

@@ -5,7 +5,6 @@ block styles
   link(rel="stylesheet", href="/css/auth.css")
 
 block content
-
   form.login-form(action=`/signup`, method="POST")
     .form-control 
       label(for="email") Email 
@@ -16,5 +15,6 @@ block content
     .form-control 
       label(for="confirmPassword") Confirm Password
       input(type="password", name="confirmPassword" id="confirmPassword")
+    include ../layouts/includes/csrf.pug
     
     button.btn(type="submit") Signup
