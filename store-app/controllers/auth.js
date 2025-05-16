@@ -71,6 +71,7 @@ exports.postSignup = (req, res) => {
   User.findOne({ email })
     .then((userDoc) => {
       if (userDoc) {
+        req.flash('error', 'Email already exists!');
         return res.redirect('/signup');
       } else {
         bcrypt
