@@ -9,6 +9,7 @@ const {
   postAddToCart,
   postCreateOrder
 } = require('../controllers/shop');
+const isAuthenticated = require('../middleware/isAuthenticated');
 
 const router = express.Router();
 
@@ -17,14 +18,15 @@ router.get('/', (req, res) => {
 });
 
 router.get('/products', getShopProducts);
+router.get('/products/:id', getProductById);
 
+router.use('/cart', isAuthenticated);
 router.post('/cart', postAddToCart);
 router.get('/cart', getCart);
 router.post('/cart-delete-item', postDeleteItemFromCart);
 
+router.use('/orders', isAuthenticated);
 router.post('/create-order', postCreateOrder);
 router.get('/orders', getOrders);
-
-router.get('/products/:id', getProductById);
 
 module.exports = { shopRoutes: router };

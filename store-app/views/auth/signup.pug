@@ -1,0 +1,22 @@
+extends ../layouts/layout.pug
+
+block styles 
+  link(rel="stylesheet", href="/css/forms.css")
+  link(rel="stylesheet", href="/css/auth.css")
+
+block content
+  if errorMessage
+    .user-message.user-message--error #{errorMessage} 
+  form.login-form(action=`/signup`, method="POST")
+    .form-control 
+      label(for="email") Email 
+      input(type="email", name="email" id="email")
+    .form-control 
+      label(for="password") Password 
+      input(type="password", name="password" id="password")
+    .form-control 
+      label(for="confirmPassword") Confirm Password
+      input(type="password", name="confirmPassword" id="confirmPassword")
+    include ../layouts/includes/csrf.pug
+    
+    button.btn(type="submit") Signup

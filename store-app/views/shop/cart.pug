@@ -14,11 +14,13 @@ block content
           h2 Quantity: #{product.quantity}                   
           h2 Price: $#{product.productId.price}
           form(action="/cart-delete-item" method="POST")
+            include ../layouts/includes/csrf.pug
             input(type="hidden", name="productId" value=`${product.productId._id}`)
             button(type="submit" class="btn danger") Delete
     hr
     .centered 
       form(action="/create-order" method="POST")
+        include ../layouts/includes/csrf.pug
         button(type="submit" class="btn") Order Now!
     p Total Price: #{cart.totalPrice}
   else 

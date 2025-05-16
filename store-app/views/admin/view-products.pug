@@ -18,6 +18,7 @@ block content
             .card__actions
               a.btn(href=`/admin/edit-product/${product._id}?edit=true`) Edit
               form(action=`/admin/delete-product`, method="POST")
+                include ../layouts/includes/csrf.pug
                 input(type="hidden" value=`${product._id}` name="productId")
                 button.btn(type="submit") Delete
   else 
