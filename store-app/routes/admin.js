@@ -8,8 +8,11 @@ const {
   postAddProduct,
   postEditProduct
 } = require('../controllers/admin');
+const isAuthenticated = require('../middleware/isAuthenticated');
 
 const router = express.Router();
+
+router.use(isAuthenticated);
 
 router.get('/products', getAdminProducts);
 
