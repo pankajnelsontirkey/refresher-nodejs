@@ -47,14 +47,26 @@ exports.postLogin = (req, res) => {
 };
 
 exports.getSignup = (req, res) => {
+  let errorMessage = req.flash('error');
+  if (errorMessage.length) {
+    errorMessage = errorMessage[0];
+  } else {
+    errorMessage = null;
+  }
   res.render('auth/signup', {
     path: '/signup',
-    pageTitle: 'Signup'
+    pageTitle: 'Signup',
+    errorMessage
   });
 };
 
 exports.postSignup = (req, res) => {
   const { email, password, confirmPassword } = req.body;
+
+  if (!email || !password) {
+    req.flash('error', 'email/password is required!');
+    return res.redirect('/signup');
+  }
 
   User.findOne({ email })
     .then((userDoc) => {

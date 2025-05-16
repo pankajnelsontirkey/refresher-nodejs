@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
-const csrf = require('csurf');
+const { csrfSync } = require('csrf-sync');
 const flash = require('connect-flash');
 
 const User = require('./models/user');
@@ -19,7 +19,10 @@ const { MONGODB_URI, MONGODB_DB_NAME, PORT, SESSION_SECRET, CSRF_SECRET } =
 const app = express();
 const store = new MongoDBStore({ uri: MONGODB_URI, collection: 'sessions' });
 
-const csrfProtection = csrf();
+const { csrfSynchronisedProtection } = csrfSync({
+  getTokenFromRequest: (req) =>
+    req.body['CSRFToken'] || req.headers('x-csrf-token')
+});
 
 app.set('view engine', 'pug');
 app.set('views', 'views');
@@ -36,9 +39,14 @@ app.use(
   })
 );
 
-app.use(csrfProtection);
-
+app.use(csrfSynchronisedProtection);
 app.use(flash());
+
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 app.use((req, res, next) => {
   if (!req.session?.user) {
@@ -52,12 +60,6 @@ app.use((req, res, next) => {
     .catch((err) => {
       console.log(err);
     });
-});
-
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
 });
 
 app.use('/admin', adminRoutes);

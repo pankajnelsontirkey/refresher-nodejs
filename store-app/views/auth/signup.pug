@@ -5,6 +5,8 @@ block styles
   link(rel="stylesheet", href="/css/auth.css")
 
 block content
+  if errorMessage
+    .user-message.user-message--error #{errorMessage} 
   form.login-form(action=`/signup`, method="POST")
     .form-control 
       label(for="email") Email 
