@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 const User = require('../models/user');
+const { sendMail } = require('../util/mailer');
 
 exports.getLogin = (req, res) => {
   let errorMessage = req.flash('error');
@@ -88,6 +89,13 @@ exports.postSignup = (req, res) => {
           })
           .then((result) => {
             res.redirect('/login');
+
+            const mailOptions = {
+              to: email,
+              subject: 'Signup successful!',
+              html: `<h1>Signup Success</h1><p1>Registration successful for user with email ${email}`
+            };
+            sendMail(mailOptions).catch((err) => console.error(err));
           })
           .catch((err) => console.error(err));
       }
