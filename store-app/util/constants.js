@@ -4,4 +4,6 @@ const COLLECTIONS = {
   ORDERS: 'orders'
 };
 
-module.exports = { COLLECTIONS };
+const { PORT, BASE_URL } = process.env;
+
+module.exports = { COLLECTIONS, BASE_URL, PORT };
