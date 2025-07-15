@@ -1,4 +1,6 @@
 const express = require('express');
+const { check, body } = require('express-validator/');
+const User = require('../models/user');
 
 const {
   getLogin,
@@ -15,10 +17,52 @@ const {
 const router = express.Router();
 
 router.get('/login', getLogin);
-router.post('/login', postLogin);
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Invalid email entered!'),
+    body('password')
+      .isLength({ min: 6 })
+      .withMessage('Atleast 6 characters!')
+      .isAlphanumeric()
+      .withMessage('Only text and numbers are allowed!')
+  ],
+  postLogin
+);
 
 router.get('/signup', getSignup);
-router.post('/signup', postSignup);
+router.post(
+  '/signup',
+  [
+    check('email')
+      .isEmail()
+      .withMessage('Please enter a valid email.')
+      .custom((value, {}) => {
+        // if (value === 'test@test.com') {
+        //   throw new Error(`Don't enter test emails`);
+        // }
+        // return true;
+        return User.find({ email: value }).then((userDoc) => {
+          if (userDoc?.length) {
+            return Promise.reject('Email already existssss');
+          }
+        });
+      }),
+    body(
+      'password',
+      'Password can only have text and numbers, must be atleast 6 characters long.'
+    )
+      .isLength({ min: 6 })
+      .isAlphanumeric(),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error('Passwords do not match!');
+      }
+      return true;
+    })
+  ],
+  postSignup
+);
 
 router.post('/logout', postLogout);
 
