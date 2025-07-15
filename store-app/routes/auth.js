@@ -23,7 +23,7 @@ router.post(
     body('email').isEmail().withMessage('Invalid email entered!'),
     body('password')
       .isLength({ min: 6 })
-      .withMessage('Atleast 6 characters!')
+      .withMessage('Password needs to be atleast 6 characters!')
       .isAlphanumeric()
       .withMessage('Only text and numbers are allowed!')
   ],
