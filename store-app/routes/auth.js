@@ -20,12 +20,16 @@ router.get('/login', getLogin);
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Invalid email entered!'),
+    body('email')
+      .isEmail()
+      .withMessage('Invalid email entered!')
+      .normalizeEmail(),
     body('password')
       .isLength({ min: 6 })
       .withMessage('Password needs to be atleast 6 characters!')
       .isAlphanumeric()
       .withMessage('Only text and numbers are allowed!')
+      .trim()
   ],
   postLogin
 );
@@ -47,19 +51,23 @@ router.post(
             return Promise.reject('Email already existssss');
           }
         });
-      }),
+      })
+      .normalizeEmail(),
     body(
       'password',
       'Password can only have text and numbers, must be atleast 6 characters long.'
     )
       .isLength({ min: 6 })
-      .isAlphanumeric(),
-    body('confirmPassword').custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Passwords do not match!');
-      }
-      return true;
-    })
+      .isAlphanumeric()
+      .trim(),
+    body('confirmPassword')
+      .trim()
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error('Passwords do not match!');
+        }
+        return true;
+      })
   ],
   postSignup
 );
