@@ -192,7 +192,7 @@ exports.postResetPassword = (req, res) => {
           to: email,
           subject: 'Password Reset',
           html: `<p>You requested a password reset</p>
-          <p>Follow the <a href=${BASE_URL}:${PORT}/new-password/${token}>link</a> to set a new password.</p>`
+          <p>Follow the <a href=${BASE_URL}:${PORT}/reset-password/${token}>link</a> to set a new password.</p>`
         };
         sendMail(mailOptions).catch((err) => console.error(err));
       })
@@ -253,6 +253,4 @@ exports.postNewPassword = (req, res) => {
     .catch((err) => {
       console.log('error', err);
     });
-
-  return res.redirect('/login');
 };

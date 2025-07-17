@@ -1,10 +1,15 @@
+const { validationResult } = require('express-validator');
+
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
-    editing: false
+    editing: false,
+    hasError: false,
+    errorMessage: null,
+    validationErrors: []
   });
 };
 
@@ -13,6 +18,20 @@ exports.postAddProduct = (req, res) => {
     body: { title, imageUrl, description, price },
     user: { _id: userId }
   } = req;
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: '/admin/add-product',
+      editing: false,
+      hasError: true,
+      validationErrors: errors.array(),
+      product: { title, imageUrl, description, price },
+      errorMessage: errors.array()[0].msg
+    });
+  }
 
   const product = new Product({ title, imageUrl, description, price, userId });
 
@@ -60,7 +79,10 @@ exports.getEditProduct = (req, res) => {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
         editing: edit === 'true',
-        product
+        product,
+        hasError: false,
+        errorMessage: null,
+        validationErrors: []
       });
     })
     .catch((err) => console.log(err));
@@ -71,12 +93,19 @@ exports.postEditProduct = (req, res) => {
     body: { title, imageUrl, description, price, productId }
   } = req;
 
-  // Product.findByIdAndUpdate(productId, { title, imageUrl, description, price })
-  //   .then((result) => {
-  //     // console.log(`${result}`);
-  //     res.redirect('/admin/products');
-  //   })
-  //   .catch((err) => console.log(err));
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: `/admin/edit-product`,
+      editing: true,
+      hasError: true,
+      validationErrors: errors.array(),
+      product: { title, imageUrl, description, price, _id: productId },
+      errorMessage: errors.array()[0].msg
+    });
+  }
 
   Product.findById(productId)
     .then((product) => {
