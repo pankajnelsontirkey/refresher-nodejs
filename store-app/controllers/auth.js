@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
 const { sendMail } = require('../util/mailer');
@@ -15,18 +16,37 @@ exports.getLogin = (req, res) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
-    errorMessage
+    errorMessage,
+    prevInput: { email: '', password: '' },
+    validationErrors: []
   });
 };
 
 exports.postLogin = (req, res) => {
   const { email, password } = req.body;
 
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/login', {
+      path: '/login',
+      pageTitle: 'Login',
+      errorMessage: errors.array()[0].msg,
+      prevInput: { email, password },
+      validationErrors: errors.array()
+    });
+  }
+
   User.findOne({ email })
     .then((user) => {
       if (!user) {
-        req.flash('error', 'user with email not found!');
-        return res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          errorMessage: 'Invalid email or password!',
+          prevInput: { email, password },
+          validationErrors: []
+        });
       }
 
       bcrypt
@@ -39,7 +59,14 @@ exports.postLogin = (req, res) => {
               res.redirect('/');
             });
           }
-          res.redirect('/login');
+          // res.redirect('/login');
+          return res.status(422).render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            errorMessage: 'Invalid email or password!',
+            prevInput: { email, password },
+            validationErrors: []
+          });
         })
         .catch((err) => {
           console.log(err);
@@ -59,50 +86,59 @@ exports.getSignup = (req, res) => {
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
-    errorMessage
+    errorMessage,
+    prevInput: { email: '', password: '', confirmPassword: '' },
+    validationErrors: []
   });
 };
 
 exports.postSignup = (req, res) => {
   const { email, password, confirmPassword } = req.body;
 
-  if (!email || !password) {
-    req.flash('error', 'email/password is required!');
-    return res.redirect('/signup');
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render('auth/signup', {
+      path: '/signup',
+      pageTitle: 'Signup',
+      errorMessage: errors.array()[0].msg,
+      prevInput: { email, password, confirmPassword },
+      validationErrors: errors.array()
+    });
   }
 
-  User.findOne({ email })
-    .then((userDoc) => {
-      if (userDoc) {
-        req.flash('error', 'Email already exists!');
-        return res.redirect('/signup');
-      } else {
-        bcrypt
-          .hash(password, 12)
-          .then((hashedPassword) => {
-            if (hashedPassword) {
-              const user = new User({
-                email,
-                password: hashedPassword,
-                cart: { items: [] }
-              });
-              return user.save();
-            }
-          })
-          .then((result) => {
-            res.redirect('/login');
-
-            const mailOptions = {
-              to: email,
-              subject: 'Signup successful!',
-              html: `<h1>Signup Success</h1><p1>Registration successful for user with email ${email}`
-            };
-            sendMail(mailOptions).catch((err) => console.error(err));
-          })
-          .catch((err) => console.error(err));
+  // User.findOne({ email })
+  //   .then((userDoc) => {
+  //     if (userDoc) {
+  //       req.flash('error', 'Email already exists!');
+  //       return res.redirect('/signup');
+  //     } else {
+  bcrypt
+    .hash(password, 12)
+    .then((hashedPassword) => {
+      if (hashedPassword) {
+        const user = new User({
+          email,
+          password: hashedPassword,
+          cart: { items: [] }
+        });
+        return user.save();
       }
     })
+    .then((result) => {
+      res.redirect('/login');
+
+      const mailOptions = {
+        to: email,
+        subject: 'Signup successful!',
+        html: `<h1>Signup Success</h1><p1>Registration successful for user with email ${email}`
+      };
+      sendMail(mailOptions).catch((err) => console.error(err));
+    })
     .catch((err) => console.error(err));
+  // }
+  // })
+  // .catch((err) => console.error(err));
 };
 
 exports.postLogout = (req, res) => {
@@ -156,7 +192,7 @@ exports.postResetPassword = (req, res) => {
           to: email,
           subject: 'Password Reset',
           html: `<p>You requested a password reset</p>
-          <p>Follow the <a href=${BASE_URL}:${PORT}/new-password/${token}>link</a> to set a new password.</p>`
+          <p>Follow the <a href=${BASE_URL}:${PORT}/reset-password/${token}>link</a> to set a new password.</p>`
         };
         sendMail(mailOptions).catch((err) => console.error(err));
       })
@@ -217,6 +253,4 @@ exports.postNewPassword = (req, res) => {
     .catch((err) => {
       console.log('error', err);
     });
-
-  return res.redirect('/login');
 };
