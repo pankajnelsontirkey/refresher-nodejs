@@ -1,13 +1,13 @@
 extends ../layouts/layout.pug
 
 block styles
-  link(rel="stylesheet", href="/css/forms.css")
-  link(rel="stylesheet", href="/css/product.css")
+  link(rel="stylesheet" href="/css/forms.css")
+  link(rel="stylesheet" href="/css/product.css")
 
 block content
   if errorMessage
     .user-message.user-message--error #{errorMessage}
-  form.product-form(action=`${editing ? '/admin/edit-product' : '/admin/add-product'}`, method="POST")
+  form.product-form(action=`${editing ? '/admin/edit-product' : '/admin/add-product'}`, method="POST" enctype="multipart/form-data")
     include ../layouts/includes/csrf.pug
     .form-control 
       label(for="title") Title
@@ -17,16 +17,20 @@ block content
         name="title"
         id="title"
         value=`${(editing || hasError) ? product.title : ''}`)
+    //- .form-control 
+    //-   label(for="image") Image URL
+    //-   input(
+    //-     class=`${hasError && validationErrors.find(e => e.path === 'imageUrl') ? 'invalid' : ''}`
+    //-     type="text"
+    //-     name="imageUrl"
+    //-     id="imageUrl"
+    //-     value=`${editing || hasError ? product.imageUrl : ''}`)
     .form-control 
-      label(for="imageUrl") Image URL
+      label(for="image") Image URL
       input(
-        class=`${hasError && validationErrors.find(e => e.path === 'imageUrl') ? 'invalid' : ''}`
-        type="text"
-        name="imageUrl"
-        id="imageUrl"
-        value=`${editing || hasError ? product.imageUrl : ''}`)
-      if editing
-        img(src=`${product.imageUrl}`)
+        type="file"
+        name="image"
+        id="image")      
     .form-control 
       label(for="price") Price
       input(
@@ -44,4 +48,4 @@ block content
     if editing
       input(type="hidden" name="productId" value=`${product._id}` )
 
-    button.btn(type="submit") #{editing ? "Update Product" : "Add Product"}
+  button.btn(type="submit") #{editing ? "Update Product" : "Add Product"}

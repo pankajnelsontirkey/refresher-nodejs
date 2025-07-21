@@ -1,8 +1,8 @@
 extends ../layouts/layout.pug
 
 block styles
-  link(rel="stylesheet", href="/css/cart.css")
-  link(rel="stylesheet", href="/css/product.css")
+  link(rel="stylesheet" href="/css/cart.css")
+  link(rel="stylesheet" href="/css/product.css")
 
 block content
   h1 Your shopping cart
@@ -15,7 +15,7 @@ block content
           h2 Price: $#{product.productId.price}
           form(action="/cart-delete-item" method="POST")
             include ../layouts/includes/csrf.pug
-            input(type="hidden", name="productId" value=`${product.productId._id}`)
+            input(type="hidden" name="productId" value=`${product.productId._id}`)
             button(type="submit" class="btn danger") Delete
     hr
     .centered 
@@ -25,4 +25,3 @@ block content
     p Total Price: #{cart.totalPrice}
   else 
     h1 No items in cart
-  
