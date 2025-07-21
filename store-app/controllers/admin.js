@@ -13,7 +13,7 @@ exports.getAddProduct = (req, res) => {
   });
 };
 
-exports.postAddProduct = (req, res) => {
+exports.postAddProduct = (req, res, next) => {
   const {
     body: { title, imageUrl, description, price },
     user: { _id: userId }
@@ -33,7 +33,13 @@ exports.postAddProduct = (req, res) => {
     });
   }
 
-  const product = new Product({ title, imageUrl, description, price, userId });
+  const product = new Product({
+    title,
+    imageUrl,
+    description,
+    price,
+    userId
+  });
 
   product
     .save()
@@ -41,7 +47,23 @@ exports.postAddProduct = (req, res) => {
       console.log(`${result._id}`);
       res.redirect('/admin/products');
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      // return res.status(500).render('admin/edit-product', {
+      //   pageTitle: 'Add Product',
+      //   path: '/admin/add-product',
+      //   editing: false,
+      //   hasError: true,
+      //   validationErrors: [],
+      //   product: { title, imageUrl, description, price },
+      //   errorMessage: 'Database operation failed, please try again!'
+      // });
+      // // res.redirect('/500');
+      // throw new Error();
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getAdminProducts = (req, res) => {
@@ -85,7 +107,11 @@ exports.getEditProduct = (req, res) => {
         validationErrors: []
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postEditProduct = (req, res) => {
@@ -121,7 +147,12 @@ exports.postEditProduct = (req, res) => {
         res.redirect('/admin/products');
       });
     })
-    .catch((err) => console.log('err', err));
+    .catch((err) => {
+      console.log('err', err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.deleteProduct = (req, res) => {
@@ -140,5 +171,10 @@ exports.deleteProduct = (req, res) => {
       console.log('Product deleted');
       res.redirect('/admin/products');
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };

@@ -73,7 +73,12 @@ exports.postLogin = (req, res) => {
           res.redirect('/login');
         });
     })
-    .catch((err) => console.log('postLogin catch() ', err));
+    .catch((err) => {
+      console.log('postLogin catch() ', err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.getSignup = (req, res) => {
@@ -135,7 +140,12 @@ exports.postSignup = (req, res) => {
       };
       sendMail(mailOptions).catch((err) => console.error(err));
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      console.error(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
   // }
   // })
   // .catch((err) => console.error(err));
@@ -224,6 +234,9 @@ exports.getNewPassword = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -251,6 +264,9 @@ exports.postNewPassword = (req, res) => {
       return res.redirect('/login');
     })
     .catch((err) => {
-      console.log('error', err);
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
