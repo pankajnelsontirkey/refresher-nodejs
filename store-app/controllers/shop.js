@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const PDFDocument = require('pdfkit');
+
 const Product = require('../models/product');
 const Order = require('../models/order');
 
@@ -172,6 +174,10 @@ exports.getInvoice = (req, res, next) => {
   } = req;
 
   Order.findById(orderId)
+    .populate({
+      path: 'products.productId',
+      select: ['title', 'price']
+    })
     .then((order) => {
       if (!order) {
         return next(new Error('Order not found!'));
@@ -191,9 +197,33 @@ exports.getInvoice = (req, res, next) => {
       //   res.setHeader('Content-Disposition', `inline; filename=${invoiceName}`);
       //   res.send(data);
       // });
-      const file = fs.createReadStream(invoicePath);
 
-      file.pipe(res);
+      // const file = fs.createReadStream(invoicePath);
+      // file.pipe(res);
+
+      const pdfDoc = new PDFDocument();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=${invoiceName}`);
+      pdfDoc.pipe(fs.createWriteStream(invoicePath));
+      pdfDoc.pipe(res);
+
+      pdfDoc.fontSize(26).text('Invoice');
+      pdfDoc.text('---------');
+
+      let totalPrice = 0;
+      order.products.forEach((product) => {
+        pdfDoc
+          .fontSize(18)
+          .text(
+            `${product.productId.title} - ${product.quantity} x $${product.productId.price}`
+          );
+        totalPrice += product.quantity * product.productId.price;
+      });
+
+      pdfDoc.fontSize(18).text('---------');
+      pdfDoc.fontSize(22).text(`Total Price: $${totalPrice}`);
+
+      pdfDoc.end();
     })
     .catch((err) => {
       return next(err);
