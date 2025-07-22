@@ -13,7 +13,8 @@ block content
           ul.orders__products
             each product in order.products              
               li.orders__products-item 
-                h2 #{product.productId.title} (#{product.quantity}) - $#{product.productId.price}  
+                h2 #{product.productId.title} (#{product.quantity}) - $#{product.productId.price} - 
+                  a(href=`/orders/${order._id}`) Invoice
         p Total Price: $#{order.totalPrice}
   else
     h1 No Orders
