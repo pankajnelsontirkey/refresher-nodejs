@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 
 const Product = require('../models/product');
+const { deleteFile } = require('../util/files');
 
 exports.getAddProduct = (req, res) => {
   res.render('admin/edit-product', {
@@ -15,9 +16,22 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res, next) => {
   const {
-    body: { title, imageUrl, description, price },
-    user: { _id: userId }
+    body: { title, description, price },
+    user: { _id: userId },
+    file: image
   } = req;
+
+  if (!image) {
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: '/admin/add-product',
+      editing: false,
+      hasError: true,
+      validationErrors: [],
+      product: { title, description, price },
+      errorMessage: 'Attached file is not a valid image!'
+    });
+  }
 
   const errors = validationResult(req);
 
@@ -28,14 +42,14 @@ exports.postAddProduct = (req, res, next) => {
       editing: false,
       hasError: true,
       validationErrors: errors.array(),
-      product: { title, imageUrl, description, price },
+      product: { title, description, price },
       errorMessage: errors.array()[0].msg
     });
   }
 
   const product = new Product({
     title,
-    imageUrl,
+    imageUrl: image.path,
     description,
     price,
     userId
@@ -49,17 +63,6 @@ exports.postAddProduct = (req, res, next) => {
     })
     .catch((err) => {
       console.log(err);
-      // return res.status(500).render('admin/edit-product', {
-      //   pageTitle: 'Add Product',
-      //   path: '/admin/add-product',
-      //   editing: false,
-      //   hasError: true,
-      //   validationErrors: [],
-      //   product: { title, imageUrl, description, price },
-      //   errorMessage: 'Database operation failed, please try again!'
-      // });
-      // // res.redirect('/500');
-      // throw new Error();
       const error = new Error(err);
       error.httpStatusCode = 500;
       return next(error);
@@ -86,7 +89,7 @@ exports.getAdminProducts = (req, res) => {
     });
 };
 
-exports.getEditProduct = (req, res) => {
+exports.getEditProduct = (req, res, next) => {
   const {
     params: { id },
     query: { edit }
@@ -114,9 +117,10 @@ exports.getEditProduct = (req, res) => {
     });
 };
 
-exports.postEditProduct = (req, res) => {
+exports.postEditProduct = (req, res, next) => {
   const {
-    body: { title, imageUrl, description, price, productId }
+    body: { title, description, price, productId },
+    file: image
   } = req;
 
   const errors = validationResult(req);
@@ -128,7 +132,7 @@ exports.postEditProduct = (req, res) => {
       editing: true,
       hasError: true,
       validationErrors: errors.array(),
-      product: { title, imageUrl, description, price, _id: productId },
+      product: { title, description, price, _id: productId },
       errorMessage: errors.array()[0].msg
     });
   }
@@ -139,7 +143,10 @@ exports.postEditProduct = (req, res) => {
         return res.redirect('/');
       }
       product.title = title;
-      product.imageUrl = imageUrl;
+      if (image) {
+        deleteFile(product.imageUrl);
+        product.imageUrl = image.path;
+      }
       product.description = description;
       product.price = price;
       return product.save().then((result) => {
@@ -155,18 +162,18 @@ exports.postEditProduct = (req, res) => {
     });
 };
 
-exports.deleteProduct = (req, res) => {
+exports.deleteProduct = (req, res, next) => {
   const {
     body: { productId }
   } = req;
-
-  // Product.findByIdAndDelete(productId)
-  //   .then((result) => {
-  //     res.redirect('/admin/products');
-  //   })
-  //   .catch((err) => console.log(err));
-
-  Product.deleteOne({ _id: productId, userId: req.user._id })
+  Product.findById(productId)
+    .then((product) => {
+      if (!product) {
+        return next(new Error('Product not found!'));
+      }
+      deleteFile(product.imageUrl);
+      return Product.deleteOne({ _id: productId, userId: req.user._id });
+    })
     .then((result) => {
       console.log('Product deleted');
       res.redirect('/admin/products');

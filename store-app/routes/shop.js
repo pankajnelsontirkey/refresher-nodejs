@@ -7,7 +7,8 @@ const {
   postDeleteItemFromCart,
   getShopProducts,
   postAddToCart,
-  postCreateOrder
+  postCreateOrder,
+  getInvoice
 } = require('../controllers/shop');
 const isAuthenticated = require('../middleware/isAuthenticated');
 
@@ -28,5 +29,6 @@ router.post('/cart-delete-item', postDeleteItemFromCart);
 router.use('/orders', isAuthenticated);
 router.post('/create-order', postCreateOrder);
 router.get('/orders', getOrders);
+router.get('/orders/:orderId', isAuthenticated, getInvoice);
 
 module.exports = { shopRoutes: router };

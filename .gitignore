@@ -136,3 +136,6 @@ dist
 .pnp.*
 
 express-server/data/
+images/
+invoices/
+data/

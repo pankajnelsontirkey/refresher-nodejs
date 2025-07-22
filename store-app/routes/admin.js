@@ -27,7 +27,6 @@ router.post(
       .isLength({ min: 3 })
       .withMessage('Title should be atleats 3 characters!')
       .trim(),
-    body('imageUrl').isURL().withMessage('Image URL needs to be a valid URL!'),
     body('price')
       .isDecimal({ decimal_digits: '2' })
       .withMessage('Price is required!'),
@@ -51,7 +50,6 @@ router.post(
       .isLength({ min: 3 })
       .withMessage('Title should be atleats 3 characters!')
       .trim(),
-    body('imageUrl').isURL().withMessage('Image URL needs to be a valid URL!'),
     body('price')
       .isDecimal({ decimal_digits: '2' })
       .withMessage('Price is required!'),

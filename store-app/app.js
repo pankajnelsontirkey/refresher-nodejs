@@ -6,6 +6,7 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const { csrfSync } = require('csrf-sync');
 const flash = require('connect-flash');
+const multer = require('multer');
 
 const User = require('./models/user');
 const { shopRoutes } = require('./routes/shop');
@@ -24,11 +25,35 @@ const { csrfSynchronisedProtection } = csrfSync({
     req.body['CSRFToken'] || req.headers('x-csrf-token')
 });
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${new Date().toISOString()}_${file.originalname}`);
+  }
+});
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true);
+  } else {
+    console.log('false');
+
+    cb(null, false);
+  }
+};
+
 app.set('view engine', 'pug');
 app.set('views', 'views');
 
 app.use(express.urlencoded({ extended: false }));
+app.use(multer({ storage: fileStorage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'data/images')));
 
 app.use(
   session({
@@ -73,6 +98,7 @@ app.use('/500', get500);
 app.use(get404);
 
 app.use((err, req, res, next) => {
+  console.log('express error => ', err);
   res.redirect('/500');
 });
 
