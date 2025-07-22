@@ -14,7 +14,7 @@ block content
             each product in order.products              
               li.orders__products-item 
                 h2 #{product.productId.title} (#{product.quantity}) - $#{product.productId.price} - 
-                  a(href=`/orders/${order._id}`) Invoice
+                  a(href=`/orders/${order._id}` target="_blank") Invoice
         p Total Price: $#{order.totalPrice}
   else
     h1 No Orders

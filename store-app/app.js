@@ -98,6 +98,7 @@ app.use('/500', get500);
 app.use(get404);
 
 app.use((err, req, res, next) => {
+  console.log('express error => ', err);
   res.redirect('/500');
 });
 
