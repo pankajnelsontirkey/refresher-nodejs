@@ -11,7 +11,7 @@ exports.getShopProducts = (req, res) => {
     .then((products) => {
       res.render('shop/product-list', {
         pageTitle: 'Products',
-        path: '/products',
+        path: '/',
         products
       });
     })
@@ -19,7 +19,7 @@ exports.getShopProducts = (req, res) => {
       console.log('Error while fetching from database', err);
       res.render('shop/product-list', {
         pageTitle: 'Products',
-        path: '/products',
+        path: '/',
         products: []
       });
     });
