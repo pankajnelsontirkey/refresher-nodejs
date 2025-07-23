@@ -16,8 +16,8 @@ block content
             h2.product__price $#{product.price}
             p.product_description #{product.description}
             .card__actions
-              a.btn(href=`/admin/edit-product/${product._id}?edit=true`) Edit
-              form(action=`/admin/delete-product`, method="POST")
+              a.btn(href=`/manage/edit-product/${product._id}?edit=true`) Edit
+              form(action=`/manage/delete-product`, method="POST")
                 include ../layouts/includes/csrf.pug
                 input(type="hidden" value=`${product._id}` name="productId")
                 button.btn(type="submit") Delete
