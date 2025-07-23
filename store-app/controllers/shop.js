@@ -5,13 +5,55 @@ const PDFDocument = require('pdfkit');
 
 const Product = require('../models/product');
 const Order = require('../models/order');
+const { ITEMS_PER_PAGE } = require('../util/constants');
 
 exports.getShopProducts = (req, res) => {
-  Product.find()
-    .then((products) => {
+  const {
+    query: { page = 1 }
+  } = req;
+
+  const pipeline = [
+    {
+      $facet: {
+        pagination: [{ $count: 'totalCount' }],
+        products: [
+          { $skip: ITEMS_PER_PAGE * (page - 1) },
+          { $limit: ITEMS_PER_PAGE }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$pagination'
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$$ROOT']
+        }
+      }
+    }
+  ];
+
+  // Product.find()
+  // .sort()
+  // .skip(ITEMS_PER_PAGE * (page - 1))
+  // .limit(ITEMS_PER_PAGE)
+
+  Product.aggregate(pipeline)
+    .exec()
+    .then(([result]) => {
+      const { pagination, products } = result;
+
       res.render('shop/product-list', {
         pageTitle: 'Products',
         path: '/',
+        pagination: {
+          ...pagination,
+          current: +page,
+          pageCount: Math.ceil(pagination.totalCount / ITEMS_PER_PAGE)
+        },
         products
       });
     })
@@ -20,6 +62,7 @@ exports.getShopProducts = (req, res) => {
       res.render('shop/product-list', {
         pageTitle: 'Products',
         path: '/',
+        pagination: { totalCount: 0 },
         products: []
       });
     });

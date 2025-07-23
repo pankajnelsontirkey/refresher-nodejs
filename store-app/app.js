@@ -27,7 +27,7 @@ const { csrfSynchronisedProtection } = csrfSync({
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'images');
+    cb(null, 'data/images');
   },
   filename: (req, file, cb) => {
     cb(null, `${new Date().toISOString()}_${file.originalname}`);
@@ -53,7 +53,7 @@ app.set('views', 'views');
 app.use(express.urlencoded({ extended: false }));
 app.use(multer({ storage: fileStorage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/images', express.static(path.join(__dirname, 'data/images')));
+app.use('/data/images', express.static(path.join(__dirname, 'data/images')));
 
 app.use(
   session({
