@@ -7,7 +7,7 @@ block styles
 block content
   if errorMessage
     .user-message.user-message--error #{errorMessage}
-  form.product-form(action=`${editing ? '/admin/edit-product' : '/admin/add-product'}`, method="POST" enctype="multipart/form-data")
+  form.product-form(action=`${editing ? '/manage/edit-product' : '/manage/add-product'}`, method="POST" enctype="multipart/form-data")
     include ../layouts/includes/csrf.pug
     .form-control 
       label(for="title") Title

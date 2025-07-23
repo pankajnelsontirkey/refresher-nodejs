@@ -2,11 +2,12 @@ const { validationResult } = require('express-validator');
 
 const Product = require('../models/product');
 const { deleteFile } = require('../util/files');
+const { ITEMS_PER_PAGE } = require('../util/constants');
 
 exports.getAddProduct = (req, res) => {
-  res.render('admin/edit-product', {
+  res.render('manage/edit-product', {
     pageTitle: 'Add Product',
-    path: '/admin/add-product',
+    path: '/manage/add-product',
     editing: false,
     hasError: false,
     errorMessage: null,
@@ -22,9 +23,9 @@ exports.postAddProduct = (req, res, next) => {
   } = req;
 
   if (!image) {
-    return res.status(422).render('admin/edit-product', {
+    return res.status(422).render('manage/edit-product', {
       pageTitle: 'Add Product',
-      path: '/admin/add-product',
+      path: '/manage/add-product',
       editing: false,
       hasError: true,
       validationErrors: [],
@@ -36,9 +37,9 @@ exports.postAddProduct = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).render('admin/edit-product', {
+    return res.status(422).render('manage/edit-product', {
       pageTitle: 'Add Product',
-      path: '/admin/add-product',
+      path: '/manage/add-product',
       editing: false,
       hasError: true,
       validationErrors: errors.array(),
@@ -59,7 +60,7 @@ exports.postAddProduct = (req, res, next) => {
     .save()
     .then((result) => {
       console.log(`${result._id}`);
-      res.redirect('/admin/products');
+      res.redirect('/manage/products');
     })
     .catch((err) => {
       console.log(err);
@@ -70,20 +71,60 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getAdminProducts = (req, res) => {
-  Product.find({ userId: req.user._id })
-    // .populate('userId', 'username')
-    .then((products) => {
-      res.render('admin/view-products', {
+  const {
+    query: { page = 1 }
+  } = req;
+
+  // Product.find({ userId: req.user._id });
+  // // .populate('userId', 'username')
+
+  const pipeline = [
+    {
+      $match: { userId: req.user._id }
+    },
+    {
+      $facet: {
+        pagination: [{ $count: 'totalCount' }],
+        products: [
+          { $skip: ITEMS_PER_PAGE * (page - 1) },
+          { $limit: ITEMS_PER_PAGE }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$pagination'
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$$ROOT']
+        }
+      }
+    }
+  ];
+
+  Product.aggregate(pipeline)
+    .exec()
+    .then(([result]) => {
+      const { pagination, products } = result;
+      res.render('manage/view-products', {
         pageTitle: 'Admin Products',
-        path: '/admin/products',
-        products
+        path: '/manage/products',
+        products,
+        pagination: {
+          ...pagination,
+          current: +page,
+          pageCount: Math.ceil(pagination.totalCount / ITEMS_PER_PAGE)
+        }
       });
     })
     .catch((err) => {
       console.log('error while fetching products from database', err);
-      res.render('admin/view-products', {
+      res.render('manage/view-products', {
         pageTitle: 'Admin Products',
-        path: '/admin/products',
+        path: '/manage/products',
         products: []
       });
     });
@@ -100,9 +141,9 @@ exports.getEditProduct = (req, res, next) => {
       if (!product) {
         throw 'Product not found';
       }
-      res.render('admin/edit-product', {
+      res.render('manage/edit-product', {
         pageTitle: 'Edit Product',
-        path: '/admin/edit-product',
+        path: '/manage/edit-product',
         editing: edit === 'true',
         product,
         hasError: false,
@@ -126,9 +167,9 @@ exports.postEditProduct = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).render('admin/edit-product', {
+    return res.status(422).render('manage/edit-product', {
       pageTitle: 'Add Product',
-      path: `/admin/edit-product`,
+      path: `/manage/edit-product`,
       editing: true,
       hasError: true,
       validationErrors: errors.array(),
@@ -151,7 +192,7 @@ exports.postEditProduct = (req, res, next) => {
       product.price = price;
       return product.save().then((result) => {
         console.log('Product updated');
-        res.redirect('/admin/products');
+        res.redirect('/manage/products');
       });
     })
     .catch((err) => {
@@ -176,7 +217,7 @@ exports.deleteProduct = (req, res, next) => {
     })
     .then((result) => {
       console.log('Product deleted');
-      res.redirect('/admin/products');
+      res.redirect('/manage/products');
     })
     .catch((err) => {
       console.log(err);

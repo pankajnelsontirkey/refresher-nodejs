@@ -1,0 +1,19 @@
+section.pagination
+  //- First Page
+  if pagination.current > 1
+    a(href=`/?page=1`) |<<
+
+  //- Previous Page
+  if pagination.current - 1 > 1
+    a(href=`/?page=${pagination.current - 1}`) <
+
+  //- Current Page
+  a(href=`/?page=${pagination.current}` class=`active`) #{pagination.current}
+
+  //- Next Page
+  if pagination.current + 1 < pagination.pageCount
+    a(href=`/?page=${pagination.current + 1}`) >
+
+  //- Last Page
+  if pagination.current < pagination.pageCount
+    a(href=`/?page=${pagination.pageCount}`) >>|
