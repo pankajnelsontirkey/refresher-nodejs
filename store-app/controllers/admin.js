@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 
 const Product = require('../models/product');
 const { deleteFile } = require('../util/files');
+const { ITEMS_PER_PAGE } = require('../util/constants');
 
 exports.getAddProduct = (req, res) => {
   res.render('manage/edit-product', {
@@ -70,13 +71,53 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getAdminProducts = (req, res) => {
-  Product.find({ userId: req.user._id })
-    // .populate('userId', 'username')
-    .then((products) => {
+  const {
+    query: { page = 1 }
+  } = req;
+
+  // Product.find({ userId: req.user._id });
+  // // .populate('userId', 'username')
+
+  const pipeline = [
+    {
+      $match: { userId: req.user._id }
+    },
+    {
+      $facet: {
+        pagination: [{ $count: 'totalCount' }],
+        products: [
+          { $skip: ITEMS_PER_PAGE * (page - 1) },
+          { $limit: ITEMS_PER_PAGE }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$pagination'
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$$ROOT']
+        }
+      }
+    }
+  ];
+
+  Product.aggregate(pipeline)
+    .exec()
+    .then(([result]) => {
+      const { pagination, products } = result;
       res.render('manage/view-products', {
         pageTitle: 'Admin Products',
         path: '/manage/products',
-        products
+        products,
+        pagination: {
+          ...pagination,
+          current: +page,
+          pageCount: Math.ceil(pagination.totalCount / ITEMS_PER_PAGE)
+        }
       });
     })
     .catch((err) => {

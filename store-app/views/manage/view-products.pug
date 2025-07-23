@@ -21,5 +21,6 @@ block content
                 include ../layouts/includes/csrf.pug
                 input(type="hidden" value=`${product._id}` name="productId")
                 button.btn(type="submit") Delete
+    include ../layouts/includes/pagination.pug
   else 
     h1 No products
