@@ -5,13 +5,13 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   // username: { type: String, required: true },
   email: { type: String, required: true },
-  password: { type: String, required: true },
+  password: { type: String, required: true, select: false },
   resetToken: String,
   resetTokenExpiration: Date,
   cart: {
     products: [
       {
-        productId: {
+        _id: {
           type: Schema.Types.ObjectId,
           required: true,
           ref: 'Product'
@@ -25,7 +25,7 @@ const userSchema = new Schema({
 
 userSchema.methods.addToCart = function (product) {
   const productExistsInCartIndex = this.cart.products.findIndex(
-    (cartProduct) => cartProduct.productId.toString() === product._id.toString()
+    (cartProduct) => cartProduct._id.toString() === product._id.toString()
   );
 
   let updatedCartProducts = [...this.cart.products];
@@ -33,7 +33,7 @@ userSchema.methods.addToCart = function (product) {
   if (productExistsInCartIndex > -1) {
     updatedCartProducts[productExistsInCartIndex].quantity += 1;
   } else {
-    updatedCartProducts.push({ productId: product._id, quantity: 1 });
+    updatedCartProducts.push({ _id: product._id, quantity: 1 });
   }
 
   const updatedCart = { products: updatedCartProducts };
@@ -44,7 +44,7 @@ userSchema.methods.addToCart = function (product) {
 
 userSchema.methods.removeFromCart = function (productId) {
   const updateProducts = this.cart.products.filter(
-    (product) => product.productId.toString() !== productId.toString()
+    (product) => product._id.toString() !== productId.toString()
   );
   this.cart.products = updateProducts;
   return this.save();

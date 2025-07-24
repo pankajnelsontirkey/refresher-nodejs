@@ -5,7 +5,11 @@ const PDFDocument = require('pdfkit');
 
 const Product = require('../models/product');
 const Order = require('../models/order');
+const User = require('../models/user');
 const { ITEMS_PER_PAGE } = require('../util/constants');
+const {
+  pipeline_UserWithCartWithProductDetailsAndQuantity
+} = require('../models/pipelines/user');
 
 exports.getShopProducts = (req, res) => {
   const {
@@ -94,13 +98,21 @@ exports.getProductById = (req, res) => {
 exports.getCart = (req, res) => {
   const { user } = req;
 
-  user
-    .populate('cart.products.productId')
-    .then((user) => {
+  // user
+  //   .populate('cart.products._id')
+  User.aggregate(pipeline_UserWithCartWithProductDetailsAndQuantity(user._id))
+    .exec()
+    .then(([user]) => {
       res.render('shop/cart', {
         pageTitle: 'Your Cart',
         path: '/cart',
-        cart: { ...user.cart }
+        cart: {
+          ...user.cart,
+          totalPrice: user.cart.products.reduce(
+            (total, product) => total + product.price * product.quantity,
+            0
+          )
+        }
       });
     })
     .catch((err) => {
@@ -142,6 +154,32 @@ exports.postDeleteItemFromCart = (req, res) => {
     .removeFromCart(productId)
     .then((result) => {
       res.redirect('/cart');
+    })
+    .catch((err) => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
+exports.getCheckout = (req, res, next) => {
+  const { user } = req;
+
+  // user
+  //   .populate('cart.products.productId')
+  User.aggregate(pipeline_UserWithCartWithProductDetailsAndQuantity(user._id))
+    .exec()
+    .then(([user]) => {
+      res.render('shop/checkout', {
+        pageTitle: 'Checkout',
+        path: '/checkout',
+        products: { ...user.cart.products },
+        totalPrice: user.cart.products.reduce(
+          (total, product) => total + product.price * product.quantity,
+          0
+        )
+      });
     })
     .catch((err) => {
       console.log(err);

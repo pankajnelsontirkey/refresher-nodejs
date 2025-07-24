@@ -38,6 +38,7 @@ exports.postLogin = (req, res) => {
   }
 
   User.findOne({ email })
+    .select('+password')
     .then((user) => {
       if (!user) {
         return res.status(422).render('auth/login', {
