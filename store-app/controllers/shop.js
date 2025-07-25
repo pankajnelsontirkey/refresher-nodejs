@@ -174,7 +174,7 @@ exports.getCheckout = (req, res, next) => {
       res.render('shop/checkout', {
         pageTitle: 'Checkout',
         path: '/checkout',
-        products: { ...user.cart.products },
+        products: user.cart.products,
         totalPrice: user.cart.products.reduce(
           (total, product) => total + product.price * product.quantity,
           0

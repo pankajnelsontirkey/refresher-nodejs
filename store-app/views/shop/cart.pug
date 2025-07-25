@@ -10,18 +10,18 @@ block content
     ul(class="cart__item-list")
       each product in cart.products
         li(class="cart__item")
-          h2 #{product.productId.title} 
+          h2 #{product.title} 
           h2 Quantity: #{product.quantity}                   
-          h2 Price: $#{product.productId.price}
+          h2 Price: $#{product.price}
           form(action="/cart-delete-item" method="POST")
             include ../layouts/includes/csrf.pug
-            input(type="hidden" name="productId" value=`${product.productId._id}`)
+            input(type="hidden" name="productId" value=`${product._id}`)
             button(type="submit" class="btn danger") Delete
     hr
     .centered 
       form(action="/create-order" method="POST")
         include ../layouts/includes/csrf.pug
         button(type="submit" class="btn") Order Now!
-    p Total Price: #{cart.totalPrice}
+    p Total Price: $#{cart.totalPrice} 
   else 
     h1 No items in cart

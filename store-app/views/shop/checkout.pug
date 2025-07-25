@@ -1,0 +1,25 @@
+extends ../layouts/layout.pug
+
+block styles
+  link(rel="stylesheet" href="/css/cart.css")
+  link(rel="stylesheet" href="/css/product.css")
+
+block content
+  h1 Checkout
+  if products.length > 0
+    ul(class="cart__item-list")
+      each product in products
+        li(class="cart__item")
+          h2 #{product.title} 
+          h2 Quantity: #{product.quantity}                   
+          h2 Price: $#{product.price}
+    div.center
+      h2 Total Price: $#{totalPrice} 
+
+    //- hr
+    //- .center 
+    //-   form(action="/create-order" method="POST")
+    //-     include ../layouts/includes/csrf.pug
+    //-     button(type="submit" class="btn") Order Now!
+  else 
+    h1 No items in cart
