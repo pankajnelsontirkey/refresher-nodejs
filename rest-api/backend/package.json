@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./app.js",
+    "dev": "nodemon ./app.js --env-file=.env.local",
     "start": "node ./app.js"
   },
   "author": "pankajnelsontirkey",
