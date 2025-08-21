@@ -1,12 +1,13 @@
 import React, { Component, Fragment } from 'react';
 
-import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
-import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
-import Input from '../../components/Form/Input/Input';
-import Paginator from '../../components/Paginator/Paginator';
-import Loader from '../../components/Loader/Loader';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
+import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
+import Post from '../../components/Feed/Post/Post';
+import Input from '../../components/Form/Input/Input';
+import Loader from '../../components/Loader/Loader';
+import Paginator from '../../components/Paginator/Paginator';
+import { REACT_APP_API_HOST } from '../../util/constants';
 import './Feed.css';
 
 class Feed extends Component {
@@ -23,13 +24,13 @@ class Feed extends Component {
 
   componentDidMount() {
     fetch('URL')
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch user status.');
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         this.setState({ status: resData.status });
       })
       .catch(this.catchError);
@@ -37,7 +38,7 @@ class Feed extends Component {
     this.loadPosts();
   }
 
-  loadPosts = direction => {
+  loadPosts = (direction) => {
     if (direction) {
       this.setState({ postsLoading: true, posts: [] });
     }
@@ -50,14 +51,14 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('URL')
-      .then(res => {
+    fetch(`${REACT_APP_API_HOST}/feed/posts`)
+      .then((res) => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         this.setState({
           posts: resData.posts,
           totalPosts: resData.totalItems,
@@ -67,16 +68,16 @@ class Feed extends Component {
       .catch(this.catchError);
   };
 
-  statusUpdateHandler = event => {
+  statusUpdateHandler = (event) => {
     event.preventDefault();
     fetch('URL')
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Can't update status!");
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         console.log(resData);
       })
       .catch(this.catchError);
@@ -86,9 +87,9 @@ class Feed extends Component {
     this.setState({ isEditing: true });
   };
 
-  startEditPostHandler = postId => {
-    this.setState(prevState => {
-      const loadedPost = { ...prevState.posts.find(p => p._id === postId) };
+  startEditPostHandler = (postId) => {
+    this.setState((prevState) => {
+      const loadedPost = { ...prevState.posts.find((p) => p._id === postId) };
 
       return {
         isEditing: true,
@@ -101,24 +102,32 @@ class Feed extends Component {
     this.setState({ isEditing: false, editPost: null });
   };
 
-  finishEditHandler = postData => {
+  finishEditHandler = (postData) => {
     this.setState({
       editLoading: true
     });
     // Set up data (with image!)
-    let url = 'URL';
+    const { title, content, image } = postData;
+
+    let url = `${REACT_APP_API_HOST}/feed/post`;
+
+    let method = 'POST';
     if (this.state.editPost) {
       url = 'URL';
     }
 
-    fetch(url)
-      .then(res => {
+    fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, image })
+    })
+      .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Creating or editing a post failed!');
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
@@ -126,11 +135,11 @@ class Feed extends Component {
           creator: resData.post.creator,
           createdAt: resData.post.createdAt
         };
-        this.setState(prevState => {
+        this.setState((prevState) => {
           let updatedPosts = [...prevState.posts];
           if (prevState.editPost) {
             const postIndex = prevState.posts.findIndex(
-              p => p._id === prevState.editPost._id
+              (p) => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
           } else if (prevState.posts.length < 2) {
@@ -144,7 +153,7 @@ class Feed extends Component {
           };
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         this.setState({
           isEditing: false,
@@ -159,23 +168,23 @@ class Feed extends Component {
     this.setState({ status: value });
   };
 
-  deletePostHandler = postId => {
+  deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
     fetch('URL')
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error('Deleting a post failed!');
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         console.log(resData);
-        this.setState(prevState => {
-          const updatedPosts = prevState.posts.filter(p => p._id !== postId);
+        this.setState((prevState) => {
+          const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
           return { posts: updatedPosts, postsLoading: false };
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         this.setState({ postsLoading: false });
       });
@@ -185,7 +194,7 @@ class Feed extends Component {
     this.setState({ error: null });
   };
 
-  catchError = error => {
+  catchError = (error) => {
     this.setState({ error: error });
   };
 
@@ -200,26 +209,26 @@ class Feed extends Component {
           onCancelEdit={this.cancelEditHandler}
           onFinishEdit={this.finishEditHandler}
         />
-        <section className="feed__status">
+        <section className='feed__status'>
           <form onSubmit={this.statusUpdateHandler}>
             <Input
-              type="text"
-              placeholder="Your status"
-              control="input"
+              type='text'
+              placeholder='Your status'
+              control='input'
               onChange={this.statusInputChangeHandler}
               value={this.state.status}
             />
-            <Button mode="flat" type="submit">
+            <Button mode='flat' type='submit'>
               Update
             </Button>
           </form>
         </section>
-        <section className="feed__control">
-          <Button mode="raised" design="accent" onClick={this.newPostHandler}>
+        <section className='feed__control'>
+          <Button mode='raised' design='accent' onClick={this.newPostHandler}>
             New Post
           </Button>
         </section>
-        <section className="feed">
+        <section className='feed'>
           {this.state.postsLoading && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <Loader />
@@ -235,7 +244,7 @@ class Feed extends Component {
               lastPage={Math.ceil(this.state.totalPosts / 2)}
               currentPage={this.state.postPage}
             >
-              {this.state.posts.map(post => (
+              {this.state.posts.map((post) => (
                 <Post
                   key={post._id}
                   id={post._id}
