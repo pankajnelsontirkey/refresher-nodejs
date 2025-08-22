@@ -1,3 +1,5 @@
+const path = require('path');
+
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -18,11 +20,18 @@ app.use((req, res, next) => {
     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
   );
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
   next();
 });
 
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 app.use('/feed', feedRoutes);
+
+app.use((error, req, res, next) => {
+  console.log(error);
+  const { statusCode, message } = error;
+  res.status(statusCode || 500).json({ message });
+});
 
 mongoose
   .connect(MONGODB_URL)

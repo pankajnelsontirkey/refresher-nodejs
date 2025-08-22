@@ -2,29 +2,26 @@ const { validationResult } = require('express-validator');
 
 const Post = require('../models/post');
 
-const getPosts = (req, res) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: 1,
-        title: 'First Post',
-        content: 'This is the first post!',
-        imageUrl: 'images/typewriter.jpg',
-        creator: { name: 'Pankaj' },
-        createdAt: new Date()
+const getPosts = (req, res, next) => {
+  Post.find()
+    .then((posts) => {
+      res.status(200).json({ message: 'Post fetched successfully.', posts });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
       }
-    ]
-  });
+      next(err);
+    });
 };
 
-const createPost = (req, res) => {
+const createPost = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      message: 'Validation error, incorrect data',
-      errors: errors.array()
-    });
+    const error = new Error('Validation error, incorrect data');
+    error.statusCode = 422;
+    throw error;
   }
 
   const { title, content } = req.body;
@@ -35,7 +32,6 @@ const createPost = (req, res) => {
     creator: { name: 'Nelson' }
   });
 
-  // Create post in db
   post
     .save()
     .then((result) => {
@@ -47,9 +43,31 @@ const createPost = (req, res) => {
       }
     })
     .catch((err) => {
-      console.log('error while saving post to database!', err);
-      res.status(500).json({ message: 'Error', err });
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
     });
 };
 
-module.exports = { getPosts, createPost };
+const getPostById = (req, res, next) => {
+  const { postId } = req.params;
+
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const error = new Error('Post not found!');
+        error.statusCode = 404;
+        throw error;
+      }
+      res.status(200).json({ message: 'Post found.', post });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+module.exports = { getPosts, createPost, getPostById };
