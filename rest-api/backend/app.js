@@ -1,7 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
 
 const feedRoutes = require('./routes/feed');
-const { CLIENT_URL } = require('./utils/constants');
+const { MONGODB_URL } = require('./utils/constants');
 
 const PORT = 8080;
 
@@ -11,7 +12,7 @@ const app = express();
 app.use(express.json());
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', CLIENT_URL);
+  res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Methods',
     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
@@ -23,6 +24,11 @@ app.use((req, res, next) => {
 
 app.use('/feed', feedRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}...`);
-});
+mongoose
+  .connect(MONGODB_URL)
+  .then((result) => {
+    app.listen(PORT, () => {
+      console.log(`Server listening on port ${PORT}...`);
+    });
+  })
+  .catch((err) => console.log('Mongodb error: ', err));

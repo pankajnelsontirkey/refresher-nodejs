@@ -1,3 +1,3 @@
-const { CLIENT_URL } = process.env;
+const { CLIENT_URL, MONGODB_URL } = process.env;
 
-module.exports = { CLIENT_URL };
+module.exports = { CLIENT_URL, MONGODB_URL };
