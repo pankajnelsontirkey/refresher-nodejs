@@ -51,7 +51,9 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch(`${REACT_APP_API_HOST}/feed/posts?page=${page}`)
+    fetch(`${REACT_APP_API_HOST}/feed/posts?page=${page}`, {
+      headers: { Authorization: `Bearer ${this.props.token}` }
+    })
       .then((res) => {
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');

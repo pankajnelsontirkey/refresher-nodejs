@@ -8,11 +8,12 @@ const {
   updatePost,
   deletePost
 } = require('../controllers/feed');
+const checkAuth = require('../middleware/checkAuth');
 
 const router = express.Router();
 
 // GET /feed/posts
-router.get('/posts', getPosts);
+router.get('/posts', checkAuth, getPosts);
 
 // POST /feed/posts
 router.post(
