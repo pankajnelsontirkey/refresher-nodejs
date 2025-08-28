@@ -4,6 +4,7 @@ const path = require('path');
 const { validationResult } = require('express-validator');
 
 const Post = require('../models/post');
+const User = require('../models/user');
 
 const getPosts = (req, res, next) => {
   const { page: currentPage } = req.query || 1;
@@ -46,24 +47,39 @@ const createPost = (req, res, next) => {
     throw error;
   }
 
-  const imageUrl = req.file.path;
-  const { title, content } = req.body;
+  const {
+    userId,
+    body: { title, content },
+    file: { path: imageUrl }
+  } = req;
+
   const post = new Post({
     title,
     imageUrl,
     content,
-    creator: { name: 'Nelson' }
+    creator: userId
   });
+
+  let newPost;
+  let creator;
 
   post
     .save()
-    .then((result) => {
-      if (result) {
-        res.status(201).json({
-          message: 'Post created successfully!',
-          post: result
-        });
-      }
+    .then((postResult) => {
+      newPost = postResult;
+      return User.findById(userId);
+    })
+    .then((user) => {
+      creator = user;
+      user.posts.push(newPost);
+      return user.save();
+    })
+    .then((userResult) => {
+      res.status(201).json({
+        message: 'Post created successfully!',
+        post: newPost,
+        creator: { _id: userResult._id, name: userResult.name }
+      });
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -126,6 +142,13 @@ const updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Not Authorized');
+        error.statusCode = 403;
+        throw error;
+      }
+
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl);
       }
@@ -156,7 +179,14 @@ const deletePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+
       // Check logged in user
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Not Authorized');
+        error.statusCode = 403;
+        throw error;
+      }
+
       clearImage(post.imageUrl);
       return Post.findByIdAndDelete(postId);
     })
