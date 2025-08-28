@@ -120,7 +120,8 @@ const updatePost = (req, res, next) => {
   const {
     params: { postId },
     body: { title, content, image },
-    file
+    file,
+    userId
   } = req;
 
   let imageUrl = image;
@@ -143,7 +144,7 @@ const updatePost = (req, res, next) => {
         throw error;
       }
 
-      if (post.creator.toString() !== req.userId) {
+      if (post.creator.toString() !== userId) {
         const error = new Error('Not Authorized');
         error.statusCode = 403;
         throw error;
@@ -170,7 +171,10 @@ const updatePost = (req, res, next) => {
 };
 
 const deletePost = (req, res, next) => {
-  const { postId } = req.params;
+  const {
+    params: { postId },
+    userId
+  } = req;
 
   Post.findById(postId)
     .then((post) => {
@@ -181,7 +185,7 @@ const deletePost = (req, res, next) => {
       }
 
       // Check logged in user
-      if (post.creator.toString() !== req.userId) {
+      if (post.creator.toString() !== userId) {
         const error = new Error('Not Authorized');
         error.statusCode = 403;
         throw error;
@@ -190,8 +194,12 @@ const deletePost = (req, res, next) => {
       clearImage(post.imageUrl);
       return Post.findByIdAndDelete(postId);
     })
+    .then((result) => User.findById(userId))
+    .then((user) => {
+      user.posts.pull(postId);
+      return user.save();
+    })
     .then((result) => {
-      console.log(result);
       res.status(200).json({ message: 'Post deleted!' });
     })
     .catch((err) => {
