@@ -18,6 +18,7 @@ router.get('/posts', checkAuth, getPosts);
 // POST /feed/posts
 router.post(
   '/post',
+  checkAuth,
   [
     body('title').trim().isLength({ min: 5 }),
     body('content').trim().isLength({ min: 5 })
@@ -26,11 +27,12 @@ router.post(
 );
 
 // GET /feed/post/:postId
-router.get('/post/:postId', getPostById);
+router.get('/post/:postId', checkAuth, getPostById);
 
 // PUT /feed/post/:postId
 router.put(
   '/post/:postId',
+  checkAuth,
   [
     body('title').trim().isLength({ min: 5 }),
     body('content').trim().isLength({ min: 5 })
@@ -39,6 +41,6 @@ router.put(
 );
 
 // DELETE /feed/post/:postId
-router.delete('/post/:postId', deletePost);
+router.delete('/post/:postId', checkAuth, deletePost);
 
 module.exports = router;
