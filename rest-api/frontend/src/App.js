@@ -18,7 +18,7 @@ class App extends Component {
   state = {
     showBackdrop: false,
     showMobileNav: false,
-    isAuth: true,
+    isAuth: false,
     token: null,
     userId: null,
     authLoading: false,
@@ -102,7 +102,16 @@ class App extends Component {
     event.preventDefault();
     this.setState({ authLoading: true });
 
-    fetch(`${REACT_APP_API_HOST}/auth/signup`)
+    const { signupForm } = authData;
+    const email = signupForm.email.value;
+    const password = signupForm.password.value;
+    const name = signupForm.name.value;
+
+    fetch(`${REACT_APP_API_HOST}/auth/signup`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name })
+    })
       .then((res) => {
         if (res.status === 422) {
           throw new Error(
