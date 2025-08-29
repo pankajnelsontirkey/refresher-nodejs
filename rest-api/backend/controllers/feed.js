@@ -14,7 +14,7 @@ const getPosts = async (req, res, next) => {
     const totalItems = await Post.find().countDocuments();
 
     const posts = await Post.find()
-      .populate('creator')
+      .populate({ path: 'creator', select: 'name email' })
       .skip((currentPage - 1) * pageSize)
       .limit(pageSize);
 
@@ -82,7 +82,10 @@ const getPostById = async (req, res, next) => {
   const { postId } = req.params;
 
   try {
-    const post = await Post.findById(postId).populate('creator');
+    const post = await Post.findById(postId).populate({
+      path: 'creator',
+      select: 'name email'
+    });
 
     if (!post) {
       const error = new Error('Post not found!');
