@@ -210,7 +210,76 @@ const deletePost = (req, res, next) => {
     });
 };
 
-module.exports = { getPosts, createPost, getPostById, updatePost, deletePost };
+const getStatus = (req, res, next) => {
+  const { userId } = req;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        const error = new Error('User not found!');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      res.status(200).json({
+        message: 'Fetched user status.',
+        status: user.status
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+const updateStatus = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const {
+    body: { status },
+    userId
+  } = req;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        const error = new Error('User not found!');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      user.status = status;
+      return user.save();
+    })
+    .then((result) => {
+      res.status(201).json({ message: 'User status updated successfully.' });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+module.exports = {
+  getPosts,
+  createPost,
+  getPostById,
+  updatePost,
+  deletePost,
+  getStatus,
+  updateStatus
+};
 
 const clearImage = (filePath) => {
   filePath = path.join(__dirname + '..' + filePath);

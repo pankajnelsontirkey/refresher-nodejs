@@ -6,7 +6,9 @@ const {
   createPost,
   getPostById,
   updatePost,
-  deletePost
+  deletePost,
+  getStatus,
+  updateStatus
 } = require('../controllers/feed');
 const checkAuth = require('../middleware/checkAuth');
 
@@ -42,5 +44,16 @@ router.put(
 
 // DELETE /feed/post/:postId
 router.delete('/post/:postId', checkAuth, deletePost);
+
+// GET /feed/status
+router.get('/status', checkAuth, getStatus);
+
+// PUT /feed/status
+router.patch(
+  '/status',
+  checkAuth,
+  [body('status').trim().notEmpty().isLength({ min: 3, max: 120 })],
+  updateStatus
+);
 
 module.exports = router;
