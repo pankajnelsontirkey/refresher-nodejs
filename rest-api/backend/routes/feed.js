@@ -49,7 +49,7 @@ router.delete('/post/:postId', checkAuth, deletePost);
 router.get('/status', checkAuth, getStatus);
 
 // PUT /feed/status
-router.patch(
+router.put(
   '/status',
   checkAuth,
   [body('status').trim().notEmpty().isLength({ min: 3, max: 120 })],
