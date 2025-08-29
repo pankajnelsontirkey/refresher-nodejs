@@ -79,7 +79,7 @@ class Feed extends Component {
     event.preventDefault();
 
     fetch(`${REACT_APP_API_HOST}/feed/status`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         Authorization: `Bearer ${this.props.token}`,
         'Content-Type': 'application/json'
