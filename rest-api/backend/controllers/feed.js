@@ -16,6 +16,7 @@ const getPosts = async (req, res, next) => {
 
     const posts = await Post.find()
       .populate({ path: 'creator', select: 'name email' })
+      .sort({ updatedAt: -1 })
       .skip((currentPage - 1) * pageSize)
       .limit(pageSize);
 
@@ -208,7 +209,9 @@ const deletePost = async (req, res, next) => {
 
     await user.save();
 
-    io.emit('post', { action: 'delete', data: { post: postId } });
+    const io = getIO();
+
+    io.emit('post', { action: 'delete', data: { postId: post._id } });
 
     res.status(200).json({ message: 'Post deleted!' });
   } catch (err) {
@@ -287,6 +290,6 @@ module.exports = {
 };
 
 const clearImage = (filePath) => {
-  filePath = path.join(__dirname + '..' + filePath);
-  fs.unlink(filePath, (err) => console.log(err));
+  filePath = path.join(__dirname, '..', filePath);
+  fs.unlink(filePath, (err) => console.log(`clearImage - err`, err));
 };
