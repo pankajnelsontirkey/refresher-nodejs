@@ -6,9 +6,8 @@ const multer = require('multer');
 
 const authRoutes = require('./routes/auth');
 const feedRoutes = require('./routes/feed');
-const { MONGODB_URL } = require('./utils/constants');
-
-const PORT = 8080;
+const { init } = require('./socket');
+const { MONGODB_URL, PORT } = require('./utils/constants');
 
 const app = express();
 
@@ -60,8 +59,14 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(MONGODB_URL)
   .then((result) => {
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}...`);
+    });
+
+    const io = init(server);
+
+    io.on('connection', (socket) => {
+      console.log('Client connected.');
     });
   })
   .catch((err) => console.log('Mongodb error: ', err));
