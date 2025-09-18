@@ -46,6 +46,8 @@ class Feed extends Component {
         this.addPost(data.post);
       } else if (action === 'update') {
         this.updatePost(data.post);
+      } else if (action === 'delete') {
+        this.deletePost(data.postId);
       }
     });
   }
@@ -79,6 +81,13 @@ class Feed extends Component {
         posts: updatedPosts,
         totalPosts: prevState.totalPosts + 1
       };
+    });
+  };
+
+  deletePost = (postId) => {
+    this.setState((prevState) => {
+      const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
+      return { posts: updatedPosts, postsLoading: false };
     });
   };
 
@@ -189,13 +198,13 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
-        const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt
-        };
+        // const post = {
+        //   _id: resData.post._id,
+        //   title: resData.post.title,
+        //   content: resData.post.content,
+        //   creator: resData.post.creator,
+        //   createdAt: resData.post.createdAt
+        // };
         this.setState((prevState) => {
           // let updatedPosts = [...prevState.posts];
           // if (prevState.editPost) {
@@ -244,13 +253,12 @@ class Feed extends Component {
         }
         return res.json();
       })
-      .then((resData) => {
-        console.log(resData);
-        this.setState((prevState) => {
-          const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
-          return { posts: updatedPosts, postsLoading: false };
-        });
-      })
+      // .then((resData) => {
+      // this.setState((prevState) => {
+      //   const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
+      //   return { posts: updatedPosts, postsLoading: false };
+      // });
+      // })
       .catch((err) => {
         console.log(err);
         this.setState({ postsLoading: false });
