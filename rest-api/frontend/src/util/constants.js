@@ -1,3 +1,5 @@
 const { REACT_APP_API_HOST } = process.env;
 
-export { REACT_APP_API_HOST };
+const PAGE_SIZE = 3;
+
+export { REACT_APP_API_HOST, PAGE_SIZE };
