@@ -3,8 +3,12 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const { createHandler } = require('graphql-http/lib/use/express');
 
 const { MONGODB_URL, PORT } = require('./utils/constants');
+
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolver');
 
 const app = express();
 
@@ -43,6 +47,14 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
+
+app.use(
+  '/graphql',
+  createHandler({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
