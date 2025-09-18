@@ -5,10 +5,11 @@ const { validationResult } = require('express-validator');
 
 const Post = require('../models/post');
 const User = require('../models/user');
+const { getIO } = require('../socket');
 
 const getPosts = async (req, res, next) => {
   const { page: currentPage } = req.query || 1;
-  const pageSize = 2;
+  const pageSize = 3;
 
   try {
     const totalItems = await Post.find().countDocuments();
@@ -65,10 +66,17 @@ const createPost = async (req, res, next) => {
 
     await user.save();
 
+    const io = getIO();
+
+    io.emit('post', {
+      action: 'create',
+      data: { post: newPost, creator: { name: user.name } }
+    });
+
     res.status(201).json({
       message: 'Post created successfully!',
       post: newPost,
-      creator: { _id: user._id, name: user.name }
+      creator: { name: user.name }
     });
   } catch (err) {
     if (!err.statusCode) {
@@ -131,15 +139,17 @@ const updatePost = async (req, res, next) => {
   }
 
   try {
-    const post = await Post.findById(postId);
-
+    const post = await Post.findById(postId).populate({
+      path: 'creator',
+      select: 'name email'
+    });
     if (!post) {
       const error = new Error('Post not found!');
       error.statusCode = 404;
       throw error;
     }
 
-    if (post.creator.toString() !== userId) {
+    if (post.creator._id.toString() !== userId) {
       const error = new Error('Not Authorized');
       error.statusCode = 403;
       throw error;
@@ -155,7 +165,11 @@ const updatePost = async (req, res, next) => {
 
     const result = await post.save();
 
-    res.status(200).json({ message: 'Post updated!', post: result._id });
+    const io = getIO();
+
+    io.emit('post', { action: 'update', data: { post: result } });
+
+    res.status(200).json({ message: 'Post updated!', post: result });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -193,6 +207,8 @@ const deletePost = async (req, res, next) => {
     user.posts.pull(postId);
 
     await user.save();
+
+    io.emit('post', { action: 'delete', data: { post: postId } });
 
     res.status(200).json({ message: 'Post deleted!' });
   } catch (err) {
